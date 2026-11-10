@@ -1,0 +1,883 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kasus Parabola</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Atkinson+Hyperlegible:wght@400;700&family=Special+Elite&display=swap">
+<style>
+/* Layout: satu panggung kasus (stage) di bawah HUD; scene bab memakai dua kolom (bukti visual | meja analisis) yang menumpuk di HP. Tema noir tunggal, aksen kuning pita polisi. */
+:root{
+  --ink:#121419; --panel:#1b1e25; --panel2:#252933; --line:#3a404c;
+  --chalk:#e7e9ed; --muted:#a0a7b3;
+  --tape:#f2c230; --tape-ink:#1a1505;
+  --red:#d9503f; --ok:#5fbf8f; --blue:#6aa7e8;
+  --paper:#ece4cf; --paper-ink:#2b261c; --cork:#9c6f42; --mud:#8a5a2b;
+  --f-display:"Alfa Slab One", "Rockwell", Georgia, serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-type:"Special Elite", "Courier New", monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--ink);color:var(--chalk)}
+body{font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:12px 40px;
+  background-image:radial-gradient(ellipse at 50% -10%, #2a2f3a 0%, transparent 60%);
+  min-height:100%;
+}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:clamp(1.35rem,3.5vw,1.9rem)}
+h3{font-size:1.1rem}
+p{margin:0}
+.type{font-family:var(--f-type)}
+.muted{color:var(--muted)}
+.tape{height:14px;border-radius:2px;background:repeating-linear-gradient(-45deg,var(--tape) 0 16px,var(--ink) 16px 32px);opacity:.9}
+.tapelabel{display:inline-block;background:var(--tape);color:var(--tape-ink);font-family:var(--f-type);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;transform:rotate(-1.5deg)}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.hud .brand{font-family:var(--f-display);font-size:1rem;color:var(--tape);margin-right:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--f-type);font-size:.75rem;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.chip.on{border-color:var(--tape);color:var(--tape)}
+.chip.done{background:var(--ok);border-color:var(--ok);color:#0d1f16}
+.score{font-family:var(--f-type);font-variant-numeric:tabular-nums}
+
+button,.btn{font:inherit;font-weight:700;min-height:44px;padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--chalk);cursor:pointer;touch-action:manipulation}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.card:focus-visible{outline:3px solid var(--tape);outline-offset:2px}
+button.primary{background:var(--tape);color:var(--tape-ink);border-color:var(--tape)}
+button.primary:hover{filter:brightness(1.07)}
+button.ghost{background:transparent}
+button.sm{min-height:36px;padding:6px 10px;font-size:.85rem}
+button[disabled]{opacity:.45;cursor:not-allowed}
+.blink{animation:blink 1s steps(2) infinite;border-color:var(--tape)!important;color:var(--tape)}
+@keyframes blink{50%{background:var(--tape);color:var(--tape-ink)}}
+
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px;align-items:start}
+.grid2>*{min-width:0}
+.box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;position:relative}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+label{font-weight:700;font-size:.92rem}
+input[type=text],input[type=number],input:not([type]),select,textarea{font:inherit;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--ink);color:var(--chalk);width:100%}
+input.n{width:5.5em;text-align:center;font-family:var(--f-type)}
+textarea{min-height:90px;resize:vertical}
+input[type=range]{width:100%;height:44px;accent-color:var(--tape)}
+.field{display:flex;flex-direction:column;gap:4px}
+.eq{font-family:var(--f-type);font-size:1.02rem;background:var(--ink);border:1px dashed var(--line);border-radius:6px;padding:6px 10px;display:inline-block}
+.fb{border-radius:8px;padding:10px 12px;font-size:.95rem;border:1px solid}
+.fb.ok{border-color:var(--ok);color:var(--ok);background:rgba(95,191,143,.08)}
+.fb.no{border-color:var(--red);color:#f0a093;background:rgba(217,80,63,.08)}
+.fb.info{border-color:var(--tape);color:var(--tape);background:rgba(242,194,48,.07)}
+.roletag{position:absolute;top:-10px;right:10px;font-family:var(--f-type);font-size:.7rem;background:var(--blue);color:#08131f;padding:2px 8px;border-radius:4px}
+.step{display:flex;flex-direction:column;gap:8px;border-left:3px solid var(--line);padding-left:12px}
+.step.cur{border-left-color:var(--tape)}
+.step.ok{border-left-color:var(--ok)}
+.choice{display:flex;flex-direction:column;gap:8px}
+.choice button{text-align:left;font-weight:400}
+
+/* graph */
+.graph{width:100%;height:auto;max-width:100%;display:block;background:#161920;border-radius:8px;touch-action:manipulation}
+.graph .g{stroke:#2a2f39;stroke-width:1}
+.graph .ax{stroke:#5b6372;stroke-width:1.5}
+.graph text{fill:var(--muted);font-size:10px;font-family:var(--f-body)}
+.graph .lbl{fill:var(--chalk);font-size:11px;font-weight:700}
+.trace{fill:none;stroke:var(--mud);stroke-width:10;stroke-linecap:round;stroke-dasharray:1 12;opacity:.95}
+.trace2{fill:none;stroke:var(--mud);stroke-width:4;opacity:.35}
+.cv{fill:none;stroke-width:3;stroke-linecap:round}
+.mag{fill:rgba(242,194,48,.12);stroke:var(--tape);stroke-width:2;stroke-dasharray:5 4}
+
+/* dialog */
+.talk{display:flex;gap:12px;align-items:flex-start}
+.talk .av{flex:0 0 76px;width:76px;height:76px;border-radius:50%;background:#2c313c;border:2px solid var(--line);overflow:hidden}
+.talk .av svg{width:100%;height:100%;display:block}
+.bubble{background:var(--paper);color:var(--paper-ink);border-radius:4px 12px 12px 12px;padding:10px 14px;font-family:var(--f-type);flex:1;min-width:0;font-size:1rem}
+.bubble b{font-family:var(--f-body)}
+.who{font-family:var(--f-body);font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#7a6a45;display:block;margin-bottom:2px}
+
+/* evidence card */
+.evcard{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:10px 12px;font-family:var(--f-type);box-shadow:0 6px 14px rgba(0,0,0,.35);position:relative}
+.evcard .t{font-family:var(--f-body);font-weight:700;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:#8a3d2f}
+.stamp{position:absolute;right:10px;top:8px;border:2px solid var(--red);color:var(--red);font-family:var(--f-display);font-size:.8rem;padding:1px 6px;transform:rotate(8deg);opacity:.85}
+.newcard{animation:drop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes drop{from{transform:translateY(-30px) rotate(-6deg);opacity:0}}
+
+/* title */
+.hero{display:grid;gap:14px;text-align:left}
+.hero h1{font-size:clamp(2.4rem,9vw,4.6rem);color:var(--tape);line-height:.95;text-shadow:3px 3px 0 #000}
+.hero .sub{font-family:var(--f-type);font-size:clamp(1rem,2.6vw,1.25rem)}
+.scene-svg{width:100%;max-width:100%;height:auto;display:block;border-radius:10px;background:#0f1115}
+.ball-anim{offset-path:path("M20 230 Q 230 -40 420 96");animation:fly 2.4s cubic-bezier(.4,.1,.7,1) .4s both}
+@keyframes fly{from{offset-distance:0%}to{offset-distance:100%}}
+.crack{opacity:0;animation:show .1s linear 2.4s forwards}
+@keyframes show{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.ball-anim{animation:none;offset-distance:100%}.crack{animation:none;opacity:1}.blink,.newcard{animation:none}}
+
+/* ID card */
+.idcard{background:var(--paper);color:var(--paper-ink);border-radius:10px;padding:14px;display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center;font-family:var(--f-type);max-width:420px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.idcard .ph{width:72px;height:72px;border-radius:6px;background:#cfc5ab;display:grid;place-items:center;overflow:hidden}
+.idcard .nm{font-family:var(--f-display);font-size:1.15rem;line-height:1.1}
+
+/* board */
+.board{position:relative;background:var(--cork);background-image:radial-gradient(rgba(0,0,0,.18) 1px,transparent 1.5px),radial-gradient(rgba(255,255,255,.08) 1px,transparent 1.5px);background-size:9px 9px,13px 13px;border:8px solid #5a3b1f;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.col{background:rgba(0,0,0,.18);border:2px dashed rgba(255,255,255,.25);border-radius:8px;padding:8px 6px;min-height:150px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.col.hot{border-color:var(--tape);background:rgba(242,194,48,.15)}
+.col .pin{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:700;color:#fff;font-size:.85rem;text-shadow:0 1px 2px #000}
+.col .pin .ph{width:54px;height:54px;border-radius:4px;background:#e8e1cc;overflow:hidden;border:3px solid #fff;transform:rotate(-2deg)}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:50px}
+.card{background:var(--paper);color:var(--paper-ink);font-family:var(--f-type);font-size:.8rem;line-height:1.3;padding:7px 8px;border-radius:3px;box-shadow:0 3px 8px rgba(0,0,0,.4);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;position:relative;max-width:100%}
+.tray .card{flex:1 1 150px;max-width:220px}
+.card b{display:block;font-family:var(--f-body);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#8a3d2f}
+.card.sel{outline:3px solid var(--tape)}
+.card.dragging{position:fixed;z-index:50;pointer-events:none;width:190px;transform:rotate(3deg);box-shadow:0 12px 26px rgba(0,0,0,.55)}
+.strings{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.strings line{stroke:#c0281b;stroke-width:2.2}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(5,6,9,.78);display:flex;align-items:flex-start;justify-content:center;overflow:auto;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(12px, env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(12px, env(safe-area-inset-left,0px))}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:760px;width:100%;padding:18px;display:flex;flex-direction:column;gap:14px}
+.folder{background:#c9a46a;color:#2a1d0b;border-radius:4px 14px 6px 6px;padding:16px;position:relative}
+.folder::before{content:"BERKAS FORENSIK";position:absolute;top:-14px;left:14px;background:#c9a46a;padding:2px 12px;border-radius:6px 6px 0 0;font-family:var(--f-type);font-size:.75rem;letter-spacing:.1em}
+.folder .doc{background:var(--paper);border-radius:3px;padding:12px;font-size:.93rem;line-height:1.5;display:flex;flex-direction:column;gap:8px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{min-height:38px;padding:6px 10px;font-size:.85rem;background:#e7dcc0;color:#2a1d0b;border-color:#b89a63}
+.tabs button.on{background:var(--paper-ink);color:var(--paper)}
+.meter{height:16px;background:var(--ink);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--tape) 60%,var(--ok));transition:width .2s}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.scroll{overflow-x:auto}
+.cctv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cctv figure{margin:0;background:#0b0c0e;border:2px solid #333;border-radius:4px;filter:grayscale(1) contrast(1.1);position:relative}
+.cctv figcaption{font-family:var(--f-type);font-size:.72rem;color:#ddd;padding:3px 6px;display:flex;justify-content:space-between}
+.cctv figure::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px);pointer-events:none}
+.rec{color:#ff5a4a}
+
+.cert{background:var(--paper);color:var(--paper-ink);border:10px double #8a6a2a;border-radius:6px;padding:22px 18px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.cert h2{color:#6b4a12;font-size:clamp(1.4rem,5vw,2.2rem)}
+.cert .nm{font-family:var(--f-display);font-size:clamp(1.5rem,6vw,2.4rem);color:var(--paper-ink);border-bottom:2px solid #8a6a2a;padding:0 12px}
+.badge{width:96px;height:96px}
+.small{font-size:.82rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:560px){
+  .stage{padding:14px}
+  .cols{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .card{font-size:.72rem}
+  .col .pin .ph{width:44px;height:44px}
+}
+</style>
+
+<div class="wrap">
+  <div class="hud" id="hud"></div>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <p class="muted small" style="text-align:center">Pengembang: Noadi Girsang, S.Pd.Gr · SMAN 2 Tangerang · noadigirsang21@guru.sma.belajar.id</p>
+</div>
+<div class="modal" id="modal" hidden></div>
+
+<script>
+/* =====================================================================
+   DATA KASUS — guru dapat mengganti angka/cerita di sini.
+   Fungsi ditulis h(x) = a x² + b x + c (x = jarak mendatar, h = tinggi, meter)
+   ===================================================================== */
+const DATA = {
+  tinggiKaca: 6.5,
+  jejak:  { a:-0.5, b:4, c:1 },            // jejak lumpur di dinding (Bab 1)
+  raka:   { nama:"Raka",  olahraga:"basket", a:-1,   b:4, c:2, klaim:5,   saksi:"Pak Udin, penjaga kantin" },
+  dinda:  { nama:"Dinda", olahraga:"voli",   a:-0.5, b:3, c:1, klaim:5.5, saksi:"Sari, teman sekelas Dinda" },
+  robo:   { nama:"Si Robo", lubang:1 },
+  cctv:   [[0,1],[2,7],[4,9]],             // tiga frame CCTV (x, tinggi)
+  ambangMirip: 90
+};
+
+/* ---------- util ---------- */
+const $ = s => document.querySelector(s);
+const num = v => { v = String(v ?? '').trim().replace(/−/g,'-').replace(',','.'); return v === '' ? NaN : Number(v); };
+const near = (a,b,t=0.011) => Math.abs(a-b) <= t;
+function fmt(n){ const r = Math.round(n*100)/100; return String(Object.is(r,-0)?0:r).replace('.',',').replace('-','−'); }
+function poly(a,b,c){
+  let s='';
+  const term=(k,v,first)=>{ if(near(k,0,1e-9)) return ''; const sg=k<0?'−':'+'; const ab=Math.abs(k); const co=(ab===1&&v)?'':fmt(ab);
+    return first ? (k<0?'−':'')+co+v : ' '+sg+' '+co+v; };
+  s+=term(a,'x²',true); s+=term(b,'x',s===''); s+=term(c,'',s==='');
+  return s||'0';
+}
+const f = p => x => p.a*x*x + p.b*x + p.c;
+const vtx = p => { const x=-p.b/(2*p.a); return [x, f(p)(x)]; };
+const Dval = (p,H) => p.b*p.b - 4*p.a*(p.c-H);
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Si Robo dihitung dari 3 titik CCTV (agar konsisten bila guru mengganti data) */
+(function solveRobo(){
+  const [[x0,y0],[x1,y1],[x2,y2]] = DATA.cctv;
+  // asumsi x0 = 0  → c = y0
+  const c=y0, r1=y1-c, r2=y2-c;
+  const det = x1*x1*x2 - x2*x2*x1;
+  const a = (r1*x2 - r2*x1)/det, b = (x1*x1*r2 - x2*x2*r1)/det;
+  Object.assign(DATA.robo,{a,b,c});
+})();
+const SUS = { raka:DATA.raka, dinda:DATA.dinda, robo:DATA.robo };
+
+/* ---------- audio ---------- */
+let actx=null, musicTimer=null;
+function ac(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==='suspended') actx.resume(); return actx; }
+function noise(c,dur,shape){ const n=Math.floor(c.sampleRate*dur), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*shape(i/n); const s=c.createBufferSource(); s.buffer=b; return s; }
+function sfxGlass(){ const c=ac(); if(!c) return; const t=c.currentTime;
+  const s=noise(c,.7,u=>Math.pow(1-u,3)); const hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800; const g=c.createGain(); g.gain.value=.45; s.connect(hp).connect(g).connect(c.destination); s.start(t);
+  for(let i=0;i<7;i++){ const o=c.createOscillator(), gg=c.createGain(); o.type='sine'; o.frequency.value=2400+Math.random()*4200; const st=t+Math.random()*.25; gg.gain.setValueAtTime(.08,st); gg.gain.exponentialRampToValueAtTime(.0001,st+.35); o.connect(gg).connect(c.destination); o.start(st); o.stop(st+.4); } }
+function sfxTick(){ const c=actx; if(!c||c.state!=='running') return; const s=noise(c,.025,u=>1-u); const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2200; const g=c.createGain(); g.gain.value=.12; s.connect(bp).connect(g).connect(c.destination); s.start(); }
+function sfxNote(ok){ const c=ac(); if(!c) return; const t=c.currentTime; (ok?[523,659,784]:[220,185]).forEach((fq,i)=>{ const o=c.createOscillator(), g=c.createGain(); o.type=ok?'triangle':'sawtooth'; o.frequency.value=fq; g.gain.setValueAtTime(ok?.08:.05,t+i*.09); g.gain.exponentialRampToValueAtTime(.0001,t+i*.09+.25); o.connect(g).connect(c.destination); o.start(t+i*.09); o.stop(t+i*.09+.3); }); }
+function setMusic(on){
+  S.music=on; save(); clearInterval(musicTimer); musicTimer=null;
+  if(!on) { updateHud(); return; }
+  const c=ac(); if(!c) return;
+  const notes=[55,65.41,73.42,77.78,73.42,65.41,82.41,77.78]; let i=0;
+  musicTimer=setInterval(()=>{ const t=c.currentTime, o=c.createOscillator(), g=c.createGain(); o.type='triangle'; o.frequency.value=notes[i++%notes.length];
+    g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(.07,t+.03); g.gain.exponentialRampToValueAtTime(.0001,t+.38); o.connect(g).connect(c.destination); o.start(t); o.stop(t+.4);
+    if(i%2===0){ const h=noise(c,.04,u=>1-u), hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000; const hg=c.createGain(); hg.gain.value=.025; h.connect(hp).connect(hg).connect(c.destination); h.start(t); }
+  },420);
+  updateHud();
+}
+function say(text){ try{ if(!('speechSynthesis' in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g,'')); u.lang='id-ID'; u.rate=1; const v=speechSynthesis.getVoices().find(v=>/^id/i.test(v.lang)); if(v) u.voice=v; speechSynthesis.speak(u);}catch(e){} }
+
+/* ---------- avatar ---------- */
+function av(kind,mood=''){
+  const face=(skin,mouth)=>`<circle cx="50" cy="46" r="20" fill="${skin}"/>
+    ${mood==='gugup'?'<path d="M38 37 l8 3 M62 37 l-8 3" stroke="#222" stroke-width="2.4"/><path d="M70 36 q4 7 0 10 q-4 -3 0 -10z" fill="#7cc6ff"/>':''}
+    <circle cx="43" cy="46" r="2.4" fill="#1a1a1a"/><circle cx="57" cy="46" r="2.4" fill="#1a1a1a"/>
+    ${mood==='gugup'?'<path d="M43 57 q3 -3 7 0 q3 3 7 0" stroke="#1a1a1a" stroke-width="2.2" fill="none"/>':(mood==='senang'?'<path d="M42 54 q8 8 16 0" stroke="#1a1a1a" stroke-width="2.4" fill="none"/>':`<path d="${mouth||'M44 56 h12'}" stroke="#1a1a1a" stroke-width="2.4" fill="none"/>`)}`;
+  const body=c=>`<path d="M18 100 Q20 70 50 68 Q80 70 82 100Z" fill="${c}"/>`;
+  let s='';
+  if(kind==='vera') s=`${body('#b89a63')}<path d="M50 68 l-10 32 M50 68 l10 32" stroke="#8d7342" stroke-width="3"/>${face('#e2b48c')}<path d="M30 44 q-2 22 8 28 M70 44 q2 22 -8 28" stroke="#3b2a20" stroke-width="7" fill="none"/><ellipse cx="50" cy="30" rx="30" ry="6" fill="#23262d"/><path d="M34 30 q2 -18 16 -18 q14 0 16 18z" fill="#2f333c"/><rect x="34" y="24" width="32" height="5" fill="var(--tape)"/>`;
+  if(kind==='raka') s=`${body('#e07a2e')}<text x="50" y="96" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="sans-serif">7</text>${face('#c68e5e')}<path d="M30 40 q2 -18 20 -18 q18 0 20 18 q-6 -8 -20 -8 q-14 0 -20 8z" fill="#1b1b1b"/>`;
+  if(kind==='dinda') s=`${body('#3d7fd1')}${face('#d9a77a')}<path d="M29 46 q-2 -24 21 -24 q23 0 21 24 q-2 -14 -21 -14 q-19 0 -21 14z" fill="#151515"/><path d="M70 36 q14 8 6 26" stroke="#151515" stroke-width="7" fill="none"/><rect x="30" y="33" width="40" height="5" rx="2" fill="var(--tape)"/>`;
+  if(kind==='robo') s=`<rect x="22" y="48" width="56" height="40" rx="6" fill="#8b95a3"/><rect x="30" y="54" width="30" height="20" rx="3" fill="#122"/><circle cx="39" cy="64" r="3" fill="${mood==='gugup'?'#ff5a4a':'#5fe0a0'}"/><circle cx="51" cy="64" r="3" fill="${mood==='gugup'?'#ff5a4a':'#5fe0a0'}"/><rect x="58" y="30" width="12" height="26" rx="3" fill="#5c6573" transform="rotate(35 64 50)"/><circle cx="72" cy="28" r="5" fill="#1d2127"/><circle cx="32" cy="92" r="6" fill="#2b2f37"/><circle cx="68" cy="92" r="6" fill="#2b2f37"/><text x="50" y="84" text-anchor="middle" font-size="7" fill="#1d2127" font-family="monospace">ROBO-01</text>`;
+  if(kind==='saksiA') s=`${body('#f1f1f1')}${face('#c9946a')}<path d="M30 34 h40 v-6 q-20 -10 -40 0z" fill="#f1f1f1"/><path d="M40 58 h20" stroke="#555" stroke-width="2"/><path d="M34 52 q16 10 32 0" stroke="#3a2a1a" stroke-width="3" fill="none"/>`;
+  if(kind==='saksiB') s=`${body('#e9e9e9')}${face('#e0b08a')}<path d="M29 48 q-2 -26 21 -26 q23 0 21 26 q-4 -12 -21 -12 q-17 0 -21 12z" fill="#2b1d14"/><circle cx="43" cy="46" r="6" fill="none" stroke="#222" stroke-width="2"/><circle cx="57" cy="46" r="6" fill="none" stroke="#222" stroke-width="2"/><path d="M49 46 h2" stroke="#222" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${s}</svg>`;
+}
+
+/* ---------- grafik ---------- */
+let gid=0;
+function graph(o){
+  const W=o.w||360, H=o.h||260, P=28, R=10;
+  const [x0,x1]=o.xr, [y0,y1]=o.yr;
+  const X=x=>P+(x-x0)/(x1-x0)*(W-P-R), Y=y=>H-P-(y-y0)/(y1-y0)*(H-P-R);
+  const id='g'+(++gid);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="graph" ${o.id?`id="${o.id}"`:''} role="img" aria-label="${esc(o.label||'Grafik bidang koordinat')}"><defs><clipPath id="${id}"><rect x="${P}" y="${R}" width="${W-P-R}" height="${H-P-R}"/></clipPath></defs>`;
+  if(o.bg) s+=o.bg(X,Y,W,H);
+  if(o.grid!==false){
+    for(let x=Math.ceil(x0);x<=x1;x++) s+=`<line class="g" x1="${X(x)}" y1="${Y(y0)}" x2="${X(x)}" y2="${Y(y1)}"/><text x="${X(x)}" y="${H-P+13}" text-anchor="middle">${x}</text>`;
+    for(let y=Math.ceil(y0);y<=y1;y++) s+=`<line class="g" x1="${X(x0)}" y1="${Y(y)}" x2="${X(x1)}" y2="${Y(y)}"/><text x="${P-6}" y="${Y(y)+3}" text-anchor="end">${y}</text>`;
+  }
+  s+=`<line class="ax" x1="${X(x0)}" y1="${Y(Math.max(y0,0))}" x2="${X(x1)}" y2="${Y(Math.max(y0,0))}"/><line class="ax" x1="${X(Math.max(x0,0))}" y1="${Y(y0)}" x2="${X(Math.max(x0,0))}" y2="${Y(y1)}"/>`;
+  s+=`<text x="${W-R}" y="${H-P-4}" text-anchor="end">x (m)</text><text x="${P+4}" y="${R+10}">h (m)</text>`;
+  s+=`<g clip-path="url(#${id})">`;
+  (o.hlines||[]).forEach(h=>{ s+=`<line x1="${X(x0)}" y1="${Y(h.y)}" x2="${X(x1)}" y2="${Y(h.y)}" stroke="${h.color||'var(--blue)'}" stroke-width="${h.w||2.5}" ${h.dash?`stroke-dasharray="${h.dash}"`:''}/>${h.label?`<text class="lbl" x="${X(x1)-4}" y="${Y(h.y)-5}" text-anchor="end" style="fill:${h.color||'var(--blue)'}">${h.label}</text>`:''}`; });
+  (o.vlines||[]).forEach(v=>{ s+=`<line x1="${X(v.x)}" y1="${Y(y0)}" x2="${X(v.x)}" y2="${Y(y1)}" stroke="${v.color||'var(--tape)'}" stroke-width="2" stroke-dasharray="6 5"/>${v.label?`<text class="lbl" x="${X(v.x)+5}" y="${R+24}" style="fill:${v.color||'var(--tape)'}">${v.label}</text>`:''}`; });
+  (o.curves||[]).forEach(c=>{
+    const a=c.from??x0, b=c.to??x1, n=140; let d='';
+    for(let i=0;i<=n;i++){ const x=a+(b-a)*i/n, y=c.f(x); d+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(Math.max(y0-5,Math.min(y1+5,y))).toFixed(1); }
+    if(c.trace){ s+=`<path class="trace2" d="${d}"/><path class="trace" d="${d}"/>`; }
+    else s+=`<path class="cv" d="${d}" stroke="${c.color||'var(--tape)'}" ${c.dash?`stroke-dasharray="${c.dash}"`:''} ${c.op?`opacity="${c.op}"`:''}/>`;
+    if(c.label){ const lx=c.lx??(a+b)/2; s+=`<text class="lbl" x="${X(lx)}" y="${Y(c.f(lx))-8}" text-anchor="middle" style="fill:${c.color||'var(--tape)'}">${c.label}</text>`; }
+  });
+  (o.mags||[]).forEach(m=>{ s+=`<circle class="mag" cx="${X(m.x)}" cy="${Y(m.y)}" r="${m.r||34}"/>`; });
+  s+=`</g>`;
+  (o.points||[]).forEach(p=>{ s+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="${p.r||6}" fill="${p.color||'var(--red)'}" stroke="#fff" stroke-width="2"/>${p.label?`<text class="lbl" x="${X(p.x)+9}" y="${Y(p.y)-8}">${p.label}</text>`:''}`; });
+  s+=`</svg>`;
+  graph.last={W,H,P,R,x0,x1,y0,y1};
+  return s;
+}
+function svgToData(svg,e,m){
+  const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+  const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+  return [ m.x0+(p.x-m.P)/(m.W-m.P-m.R)*(m.x1-m.x0), m.y0+(m.H-m.P-p.y)/(m.H-m.P-m.R)*(m.y1-m.y0) ];
+}
+
+/* ---------- state ---------- */
+const KEY='kasusParabola_v1', RKEY='kasusParabola_rekap';
+const fresh = () => ({ scene:'s01', name:'', kelas:'', absen:'', mode:'individu', role:'Analis', music:false,
+  ch:{1:{wrong:0,help:0,helpAt:0,done:false},2:{wrong:0,help:0,helpAt:0,done:false},3:{wrong:0,help:0,helpAt:0,done:false},4:{wrong:0,help:0,helpAt:0,done:false}},
+  match:{who:null,tries:0,done:false,score:0}, first:null, cards:[], board:{}, report:{pelaku:'',alasan:'',D:''},
+  accuse:0, laporan:0, tuduhan:0, ending:'', hint3:false, refl:['','',''], saved:false, b2:{raka:false,dinda:false}, b3:0, b4:{raka:false,dinda:false,robo:false} });
+let S = fresh();
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const v=JSON.parse(localStorage.getItem(KEY)); return v&&v.ch?v:null; }catch(e){ return null; } }
+function rekapList(){ try{ return JSON.parse(localStorage.getItem(RKEY))||[]; }catch(e){ return []; } }
+const chScore = n => S.ch[n].done ? Math.max(5, 10-2*S.ch[n].help) : 0;
+const total = () => chScore(1)+chScore(2)+chScore(3)+chScore(4) + S.match.score + S.tuduhan + S.laporan;
+const CHMAP={s04:1,s06:2,s09:3,s10:4};
+function wrong(n){ S.ch[n].wrong++; sfxNote(false); save(); updateHud(); }
+function addCard(id){ if(!S.cards.includes(id)) S.cards.push(id); save(); }
+const tim = () => S.mode==='tim';
+const roleTag = r => tim() ? `<span class="roletag">Dipegang: ${r}</span>` : '';
+
+/* ---------- HUD ---------- */
+function updateHud(){
+  const h=$('#hud');
+  if(S.scene==='s01'){ h.innerHTML=`<span class="brand">KASUS PARABOLA</span><button class="sm ghost" id="hMus">${S.music?'Musik: ON':'Musik: OFF'}</button>`; $('#hMus').onclick=()=>setMusic(!S.music); return; }
+  const n=CHMAP[S.scene]; const c=n&&S.ch[n];
+  const blink = c && !c.done && c.wrong>=2 && c.wrong>c.helpAt;
+  const chip=i=>`<span class="chip ${S.ch[i].done?'done':(CHMAP[S.scene]===i?'on':'')}">Bab ${i}</span>`;
+  h.innerHTML=`<span class="brand">KASUS PARABOLA</span>
+    <div class="chips">${[1,2,3,4].map(chip).join('')}</div>
+    <span class="score">Skor ${total()}/100</span>
+    <span class="muted small">${esc(S.name||'')}${tim()?' · '+esc(S.role):''}</span>
+    <button class="sm ${blink?'blink':''}" id="hBerkas">Berkas Forensik</button>
+    <button class="sm ghost" id="hMus">${S.music?'Musik: ON':'Musik: OFF'}</button>`;
+  $('#hBerkas').onclick=openBerkas; $('#hMus').onclick=()=>setMusic(!S.music);
+}
+
+/* ---------- dialog ketik ---------- */
+function talk(kind,who,text,mood){ return `<div class="talk"><div class="av">${av(kind,mood)}</div><div class="bubble"><span class="who">${who}</span><span class="tt" data-t="${esc(text)}"></span></div></div>`; }
+function runTalks(root=document){
+  root.querySelectorAll('.tt').forEach(el=>{
+    const full=el.dataset.t; if(reduceMotion){ el.textContent=full; return; }
+    let i=0; el.innerHTML=''; const plain=full;
+    const iv=setInterval(()=>{ i+=2; el.textContent=plain.slice(0,i); if(i%6===0) sfxTick(); if(i>=plain.length){ clearInterval(iv); el.textContent=full; } },22);
+    el.closest('.bubble').onclick=()=>{ clearInterval(iv); el.textContent=full; };
+  });
+}
+
+/* ---------- navigasi ---------- */
+function go(id){ S.scene=id; if(id!=='s01') save(); updateHud(); const st=$('#stage'); st.innerHTML=''; SCN[id](st); runTalks(st); window.scrollTo({top:0,behavior:reduceMotion?'auto':'smooth'}); }
+function cardHtml(t,d,isNew){ return `<div class="evcard ${isNew?'newcard':''}"><span class="stamp">BUKTI</span><div class="t">${t}</div><div>${d}</div></div>`; }
+
+/* ---------- modal ---------- */
+function modal(html){ const m=$('#modal'); m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`; m.hidden=false; m.onclick=e=>{ if(e.target===m) closeModal(); }; return m; }
+function closeModal(){ const m=$('#modal'); m.hidden=true; m.innerHTML=''; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('#modal').hidden) closeModal(); });
+
+/* ---------- Berkas Forensik (S05) ---------- */
+const BERKAS={
+  umum:`<b>Bentuk umum</b><span>f(x) = ax² + bx + c, dengan a ≠ 0.</span><span><b>a</b> menentukan arah buka: a &gt; 0 terbuka ke atas (punya titik terendah), a &lt; 0 terbuka ke bawah (punya titik tertinggi). Makin besar |a|, makin sempit parabolanya.</span><span><b>c</b> adalah tinggi saat x = 0, yaitu titik potong dengan sumbu-y.</span>`,
+  puncak:`<b>Titik puncak dan sumbu simetri</b><span>Sumbu simetri: x = −b / (2a).</span><span>Tinggi puncak: substitusikan x puncak ke f(x), atau pakai y = −D / (4a).</span><span>Contoh: f(x) = −x² + 4x + 2 → x = −4 / (2·(−1)) = 2, f(2) = −4 + 8 + 2 = 6. Puncak (2, 6).</span>`,
+  akar:`<b>Akar dan diskriminan</b><span>Untuk ax² + bx + c = 0, diskriminan D = b² − 4ac.</span><span>D &gt; 0: dua akar real (garis memotong parabola di dua titik). D = 0: satu akar (menyinggung). D &lt; 0: tidak ada akar real (tidak pernah mencapai).</span><span>Bisakah bola mencapai tinggi H? Bentuk ax² + bx + c = H → ax² + bx + (c − H) = 0, lalu hitung D.</span>`,
+  tiga:`<b>Menyusun fungsi dari 3 titik</b><span>Substitusikan tiap titik ke f(x) = ax² + bx + c sehingga didapat 3 persamaan.</span><span>Titik dengan x = 0 langsung memberi c. Dua persamaan sisanya diselesaikan dengan eliminasi: samakan koefisien b, lalu kurangkan untuk mendapat a, kemudian substitusi balik untuk b.</span>`
+};
+function openBerkas(){
+  const n=CHMAP[S.scene];
+  if(n && !S.ch[n].done && S.ch[n].wrong>S.ch[n].helpAt){ S.ch[n].help++; S.ch[n].helpAt=S.ch[n].wrong; save(); updateHud(); }
+  let tab=n===4?'akar':n===3?'tiga':n===2?'puncak':'umum'; const ex={a:-1,b:4,c:2};
+  const m=modal(`<div class="row" style="justify-content:space-between"><h2>Berkas Forensik</h2><button class="sm" id="bx">Tutup</button></div>
+   ${n&&S.ch[n].help?`<p class="fb info small">Bantuan setelah salah tercatat: ${S.ch[n].help} kali (−2 poin per bantuan pada bab ini, skor bab minimal 5).</p>`:''}
+   <div class="folder"><div class="doc"><div class="tabs" id="btabs">${[['umum','Bentuk umum'],['puncak','Puncak & sumbu'],['akar','Akar & D'],['tiga','Fungsi dari 3 titik']].map(([k,l])=>`<button data-k="${k}">${l}</button>`).join('')}</div><div id="bdoc" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+   <div class="box"><h3>Laboratorium grafik</h3><div id="bg"></div>
+     <div class="grid2" style="gap:6px">${['a','b','c'].map(k=>`<div class="field"><label for="bs${k}">${k} = <span id="bv${k}"></span></label><input type="range" id="bs${k}" min="${k==='a'?-2:k==='b'?-6:-4}" max="${k==='a'?2:k==='b'?6:8}" step="${k==='a'?0.1:0.5}" value="${ex[k]}"></div>`).join('')}</div>
+     <p class="type" id="binfo"></p></div>`);
+  const draw=()=>{ const p={a:+$('#bsa').value||0.0001,b:+$('#bsb').value,c:+$('#bsc').value}; ['a','b','c'].forEach(k=>$('#bv'+k).textContent=fmt(+$('#bs'+k).value));
+    const [vx,vy]=vtx(p), D=p.b*p.b-4*p.a*p.c;
+    $('#bg').innerHTML=graph({xr:[-2,8],yr:[-4,10],curves:[{f:f(p),color:'var(--tape)'}],points:[{x:vx,y:vy,label:`(${fmt(vx)}, ${fmt(vy)})`}],vlines:[{x:vx}]});
+    $('#binfo').innerHTML=`f(x) = ${poly(p.a,p.b,p.c)}<br>Sumbu simetri x = ${fmt(vx)} · Puncak (${fmt(vx)}, ${fmt(vy)}) · D = ${fmt(D)} ${D>0?'→ 2 akar':D===0?'→ 1 akar':'→ tidak ada akar real'}`; };
+  const setTab=k=>{ tab=k; $('#bdoc').innerHTML=BERKAS[k]; m.querySelectorAll('#btabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); };
+  m.querySelectorAll('#btabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.k));
+  ['a','b','c'].forEach(k=>$('#bs'+k).oninput=draw); $('#bx').onclick=closeModal; setTab(tab); draw();
+}
+
+/* =====================================================================
+   SCENES
+   ===================================================================== */
+const SCN={};
+
+/* S01 Pembuka */
+SCN.s01=st=>{
+  const prev=load(); const resumable=prev && prev.scene && prev.scene!=='s01' && prev.name;
+  st.innerHTML=`<div class="hero">
+    <span class="tapelabel">Berkas No. X-07 · Fungsi Kuadrat</span>
+    <h1>KASUS<br>PARABOLA</h1>
+    <p class="sub">Setiap lintasan meninggalkan jejak. Temukan persamaannya, ungkap pelakunya.</p></div>
+    <svg class="scene-svg" viewBox="0 0 480 260" role="img" aria-label="Animasi bola melengkung memecahkan kaca jendela lantai dua">
+      <rect width="480" height="260" fill="#0f1115"/>
+      <rect x="380" y="30" width="100" height="230" fill="#20242c"/><rect x="380" y="140" width="100" height="4" fill="#2d323c"/>
+      <rect x="398" y="62" width="62" height="64" fill="#2c4a63" stroke="#6b7685" stroke-width="3"/>
+      <g class="crack" stroke="#e8f2ff" stroke-width="1.6" fill="none"><path d="M420 96 l-18 -20 M420 96 l26 -24 M420 96 l30 10 M420 96 l-6 28 M420 96 l-20 16 M420 96 l12 30"/><circle cx="420" cy="96" r="8" fill="#0f1115"/></g>
+      <text x="430" y="150" fill="#6b7685" font-size="10" font-family="monospace" text-anchor="middle">R. GURU · Lt 2</text>
+      <path d="M20 230 Q 230 -40 420 96" fill="none" stroke="var(--tape)" stroke-width="2" stroke-dasharray="3 7" opacity=".55"/>
+      <line x1="0" y1="232" x2="380" y2="232" stroke="#3a404c" stroke-width="2"/>
+      <circle r="9" fill="#e07a2e" stroke="#fff" stroke-width="1.5">${reduceMotion?'<animateMotion dur="0.01s" fill="freeze" path="M420 96"/>':'<animateMotion dur="2.4s" begin="0s" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines="0.4 0.1 0.7 1" path="M20 230 Q 230 -40 420 96"/>'}</circle>
+    </svg>
+    <div class="tape"></div>
+    <div class="actions" style="justify-content:flex-start">
+      <button class="primary" id="go">Mulai Penyelidikan</button>
+      ${resumable?`<button id="res">Lanjutkan kasus ${esc(prev.name)}</button>`:''}
+      <button id="help">Petunjuk</button>
+      <button class="ghost" id="rek">Rekap Guru</button>
+    </div>
+    <p class="muted small">SMA kelas X · Fase E · Persamaan dan Fungsi Kuadrat · 2 × 45 menit</p>`;
+  $('#go').onclick=()=>{ sfxGlass(); const m=S.music; S=fresh(); S.music=m; save(); setTimeout(()=>go('s02'),reduceMotion?0:350); };
+  if(resumable) $('#res').onclick=()=>{ S=prev; if(S.music) setMusic(true); go(S.scene); };
+  $('#help').onclick=()=>{ modal(`<h2>Petunjuk Penyelidikan</h2>
+    <div style="display:flex;flex-direction:column;gap:8px">
+    <p>Kamu adalah detektif. Kaca ruang guru pecah dan tidak ada yang mengaku. Pecahkan kasus dengan fungsi kuadrat.</p>
+    <p><b>Cocokkan Jejak.</b> Geser slider a, b, c sampai grafikmu menempel pada jejak barang bukti.</p>
+    <p><b>Interogasi Saksi.</b> Hitung titik puncak untuk membuktikan klaim saksi jujur atau bohong.</p>
+    <p><b>Papan Bukti.</b> Seret kartu bukti ke foto tersangka (atau ketuk kartu, lalu ketuk tersangka), lalu tulis Laporan Kasus.</p>
+    <p><b>Berkas Forensik</b> berisi ringkasan materi dan bisa dibuka kapan saja. Membukanya setelah salah mengurangi 2 poin bab itu.</p>
+    <p>Salah tidak berarti kalah. Setiap kesalahan memberi petunjuk baru.</p>
+    <p class="muted small">Skor maksimum 100: Kartu Bukti Bab 1–4 (40), Cocokkan Jejak (15), Ketepatan tuduhan (20), Laporan Kasus (25).</p></div>
+    <div class="actions"><button class="primary" id="ok">Mengerti</button></div>`); $('#ok').onclick=closeModal; };
+  $('#rek').onclick=showRekap;
+};
+
+function showRekap(){
+  const L=rekapList();
+  const rows=L.map(r=>`<tr><td>${esc(r.tgl)}</td><td>${esc(r.nama)}</td><td>${esc(r.kelas)}</td><td>${esc(r.absen)}</td><td>${esc(r.mode)}</td><td>${r.b1}/${r.b2}/${r.b3}/${r.b4}</td><td>${r.cocok}</td><td>${r.tuduhan}</td><td>${r.laporan}</td><td><b>${r.total}</b></td><td>${r.bantuan}</td><td>${esc(r.ending)}</td><td>${esc(r.teks)}</td></tr>`).join('');
+  const m=modal(`<div class="row" style="justify-content:space-between"><h2>Rekap Guru</h2><button class="sm" id="rx">Tutup</button></div>
+   <p class="muted small">Data tersimpan di perangkat ini saja. Salin lalu tempel ke spreadsheet.</p>
+   <div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Nama</th><th>Kelas</th><th>Absen</th><th>Mode</th><th>Bab 1/2/3/4</th><th>Cocok</th><th>Tuduhan</th><th>Laporan</th><th>Total</th><th>Bantuan</th><th>Ending</th><th>Isi Laporan</th></tr></thead><tbody>${rows||'<tr><td colspan="13" class="muted">Belum ada siswa yang menyelesaikan kasus di perangkat ini.</td></tr>'}</tbody></table></div>
+   <div class="actions"><span id="rmsg" class="muted small" style="margin-right:auto"></span>${L.length?'<button id="rclr" class="ghost">Hapus rekap</button><button class="primary" id="rcp">Salin semua (TSV)</button>':''}</div>`);
+  $('#rx').onclick=closeModal;
+  if(L.length){
+    $('#rcp').onclick=()=>{ const h='Tanggal\tNama\tKelas\tAbsen\tMode\tBab1\tBab2\tBab3\tBab4\tCocok\tTuduhan\tLaporan\tTotal\tBantuan\tEnding\tLaporan Kasus';
+      const t=[h,...L.map(r=>[r.tgl,r.nama,r.kelas,r.absen,r.mode,r.b1,r.b2,r.b3,r.b4,r.cocok,r.tuduhan,r.laporan,r.total,r.bantuan,r.ending,r.teks.replace(/\s+/g,' ')].join('\t'))].join('\n');
+      copyText(t,$('#rmsg')); };
+    $('#rclr').onclick=()=>{ $('#rmsg').innerHTML='Yakin hapus semua rekap? <button class="sm" id="ry">Ya, hapus</button>'; $('#ry').onclick=()=>{ try{localStorage.removeItem(RKEY)}catch(e){} closeModal(); showRekap(); }; };
+  }
+}
+function copyText(t,msgEl){
+  const done=()=>{ if(msgEl) msgEl.textContent='Tersalin.'; };
+  try{ navigator.clipboard.writeText(t).then(done).catch(fallback); }catch(e){ fallback(); }
+  function fallback(){ const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='width:100%;min-height:120px'; msgEl.innerHTML='Salin manual dari kotak ini:'; msgEl.appendChild(ta); ta.select(); }
+}
+
+/* S02 Login & Peran */
+SCN.s02=st=>{
+  st.innerHTML=`<span class="tapelabel">Pendaftaran Detektif</span><h2>Siapa yang menangani kasus ini?</h2>
+   <div class="grid2">
+    <div class="box">
+      <div class="field"><label for="nm">Nama</label><input id="nm" autocomplete="name" value="${esc(S.name)}" placeholder="Nama lengkap"></div>
+      <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="kl">Kelas</label><input id="kl" value="${esc(S.kelas)}" placeholder="X-3"></div>
+      <div class="field" style="flex:1"><label for="ab">No. absen</label><input id="ab" inputmode="numeric" value="${esc(S.absen)}" placeholder="12"></div></div>
+      <div class="field"><label>Mode</label><div class="row"><button id="mi" class="${S.mode==='individu'?'primary':''}">Individu</button><button id="mt" class="${S.mode==='tim'?'primary':''}">Tim 3 orang</button></div></div>
+      <div class="field" id="rolef" ${S.mode==='tim'?'':'hidden'}><label for="rl">Peran di tim</label>
+        <select id="rl">${['Analis','Penyidik Lapangan','Juru Bicara'].map(r=>`<option ${S.role===r?'selected':''}>${r}</option>`).join('')}</select>
+        <p class="muted small">Analis memegang persamaan, Penyidik Lapangan memegang foto jejak, Juru Bicara memegang Laporan. Mainkan bergantian di satu perangkat; tiap panel menandai siapa yang memegangnya, jadi tim harus berdiskusi.</p>
+        <div class="field"><label for="tm">Nama anggota tim (opsional)</label><input id="tm" placeholder="Ani, Budi, Cici" value="${esc(S.team||'')}"></div></div>
+      <p id="err" class="fb no" hidden></p>
+    </div>
+    <div class="box" style="align-items:center;justify-content:center;background:transparent;border-style:dashed">
+      <div class="idcard"><div class="ph">${av('vera')}</div><div><div class="small">KARTU ID DETEKTIF</div><div class="nm" id="idn">—</div><div class="small" id="idk">Kelas — · Absen —</div><div class="small" id="idr">Mode Individu</div></div></div>
+    </div></div>
+   <div class="actions"><button class="primary" id="nx">Cetak Kartu ID</button></div>`;
+  const upd=()=>{ $('#idn').textContent=$('#nm').value||'—'; $('#idk').textContent=`Kelas ${$('#kl').value||'—'} · Absen ${$('#ab').value||'—'}`; $('#idr').textContent=S.mode==='tim'?`Tim · ${$('#rl').value}`:'Mode Individu'; };
+  ['nm','kl','ab','rl'].forEach(i=>$('#'+i).oninput=upd);
+  $('#mi').onclick=()=>{ S.mode='individu'; $('#mi').className='primary'; $('#mt').className=''; $('#rolef').hidden=true; upd(); };
+  $('#mt').onclick=()=>{ S.mode='tim'; $('#mt').className='primary'; $('#mi').className=''; $('#rolef').hidden=false; upd(); };
+  upd();
+  $('#nx').onclick=()=>{ const n=$('#nm').value.trim(), k=$('#kl').value.trim(), a=$('#ab').value.trim();
+    if(!n||!k||!a){ const e=$('#err'); e.hidden=false; e.textContent='Isi nama, kelas, dan nomor absen dulu agar kartu ID bisa dicetak.'; return; }
+    Object.assign(S,{name:n,kelas:k,absen:a,role:$('#rl').value,team:($('#tm')||{}).value||''}); sfxTick(); go('s03'); };
+};
+
+/* S03 Briefing */
+SCN.s03=st=>{
+  const txt=`Detektif ${S.name}, kaca jendela ruang guru lantai 2 pecah saat class meeting. Bagian bawah kaca ${fmt(DATA.tinggiKaca)} meter dari tanah. Tidak ada yang mengaku. Dua siswa dicurigai: Raka dari tim basket dan Dinda dari tim voli. Ingat, kita menuduh berdasarkan data, bukan prasangka.`;
+  st.innerHTML=`<span class="tapelabel">Markas Detektif · Briefing</span><h2>Kasus Kaca Pecah Ruang Guru</h2>
+   ${talk('vera','Inspektur Vera',txt)}
+   <div class="row"><button class="sm" id="spk">Dengarkan briefing</button></div>
+   <div class="box"><h3>Misi Penyelidikan</h3>
+     <div class="step"><b>Misi 1</b> Menentukan titik puncak, sumbu simetri, dan akar dari grafik maupun persamaan.</div>
+     <div class="step"><b>Misi 2</b> Menyusun fungsi kuadrat dari data atau titik yang diketahui.</div>
+     <div class="step"><b>Misi 3</b> Menggunakan model fungsi kuadrat untuk mengambil keputusan dan menilai klaim.</div></div>
+   <div class="actions"><button class="primary" id="nx">Terima Kasus</button></div>`;
+  $('#spk').onclick=()=>say(txt); $('#nx').onclick=()=>go('s04');
+};
+
+/* S04 Bab 1: Jejak di Dinding */
+SCN.s04=st=>{
+  const p=DATA.jejak, [vx,vy]=vtx(p), r1=(-p.b+Math.sqrt(p.b*p.b-4*p.a*p.c))/(2*p.a), r2=(-p.b-Math.sqrt(p.b*p.b-4*p.a*p.c))/(2*p.a);
+  const from=Math.max(0,Math.min(r1,r2)), to=Math.max(r1,r2);
+  const L={step:S.ch[1].done?4:1, tap:null, axis:0, mag:false, msg:'', cls:''};
+  const xr=[0,Math.ceil(to)+1], yr=[0,Math.ceil(vy)+1];
+  st.innerHTML=`<span class="tapelabel">Bab 1 · TKP</span><h2>Jejak di Dinding</h2>
+   ${talk('vera','Inspektur Vera','Bola meninggalkan jejak lumpur melengkung di dinding samping gedung. Baca jejak itu: di mana puncaknya, di mana sumbu simetrinya, dan ke mana parabolanya membuka?')}
+   <div class="grid2"><div class="box">${roleTag('Penyidik Lapangan')}<div id="gw"></div><label class="row small" style="font-weight:400"><input type="checkbox" id="grd" checked style="width:22px;height:22px"> Tampilkan grid koordinat</label></div>
+   <div class="box">${roleTag('Analis')}<div id="steps" style="display:flex;flex-direction:column;gap:12px"></div><div id="fb"></div></div></div>
+   <div class="actions"><button class="primary" id="nx" ${S.ch[1].done?'':'hidden'}>Lanjut ke Bab 2</button></div>`;
+  const draw=()=>{ const g=$('#grd').checked;
+    $('#gw').innerHTML=graph({id:'g1',xr,yr,grid:g,label:'Jejak lumpur bola di dinding',
+      bg:(X,Y,W,H)=>`<rect x="0" y="0" width="${W}" height="${H}" fill="#2a2620"/>${Array.from({length:12},(_,i)=>`<line x1="0" y1="${i*24}" x2="${W}" y2="${i*24}" stroke="#332e26" stroke-width="2"/>`).join('')}`,
+      curves:[{f:f(p),trace:true,from,to}],
+      vlines:L.step>2||L.step===2?[{x:L.step>2?vx:L.axis,label:`x = ${fmt(L.step>2?vx:L.axis)}`}]:[],
+      mags:L.mag?[{x:vx,y:vy-0.3,r:40}]:[],
+      points:L.tap?[{x:L.tap[0],y:L.tap[1],color:L.step>1?'var(--ok)':'var(--red)',label:L.step>1?`(${fmt(vx)}, ${fmt(vy)})`:''}]:[] });
+    const m=graph.last; const svg=$('#g1');
+    svg.onclick=e=>{ if(L.step!==1) return; const [x,y]=svgToData(svg,e,m); const sx=Math.round(x*2)/2, sy=Math.round(y*2)/2;
+      if(Math.abs(x-vx)<=0.6 && Math.abs(y-vy)<=0.7){ L.tap=[vx,vy]; L.step=2; L.axis=0; L.mag=false; fb(`Tepat. Puncak jejak di (${fmt(vx)}, ${fmt(vy)}). Titik tertinggi bola adalah ${fmt(vy)} m.`,'ok'); sfxNote(true); }
+      else { L.tap=[sx,sy]; L.mag=true; wrong(1); fb(`Titik (${fmt(sx)}, ${fmt(sy)}) belum yang tertinggi. Kaca pembesar menyorot bagian jejak yang lebih tinggi. Coba lagi.`,'no'); }
+      draw(); steps(); };
+  };
+  const fb=(t,c)=>{ $('#fb').innerHTML=`<p class="fb ${c}">${t}</p>`; };
+  const steps=()=>{
+    const s=(n,html)=>`<div class="step ${L.step===n?'cur':L.step>n?'ok':''}">${html}</div>`;
+    $('#steps').innerHTML=
+      s(1,`<b>1. Ketuk titik tertinggi jejak (titik puncak).</b>${L.step>1?`<span class="type">Puncak = (${fmt(vx)}, ${fmt(vy)})</span>`:'<span class="muted small">Ketuk langsung pada grafik.</span>'}`)+
+      s(2,`<b>2. Tarik garis sumbu simetri.</b>${L.step===2?`<input type="range" id="ax" min="${xr[0]}" max="${xr[1]}" step="0.5" value="${L.axis}" aria-label="Posisi sumbu simetri"><div class="row"><span class="eq">x = <span id="axv">${fmt(L.axis)}</span></span><button id="axok">Pasang sumbu</button></div>`:L.step>2?`<span class="type">Sumbu simetri x = ${fmt(vx)}</span>`:''}`)+
+      s(3,`<b>3. Tentukan tanda a dari arah buka parabola.</b>${L.step===3?`<div class="choice"><button id="ap">a &gt; 0 · terbuka ke atas</button><button id="an">a &lt; 0 · terbuka ke bawah</button></div>`:L.step>3?`<span class="type">a &lt; 0, parabola terbuka ke bawah</span>`:''}`);
+    if(L.step===2){ $('#ax').oninput=e=>{ L.axis=+e.target.value; $('#axv').textContent=fmt(L.axis); draw(); };
+      $('#axok').onclick=()=>{ if(near(L.axis,vx)){ L.step=3; sfxNote(true); fb('Sumbu simetri melewati puncak dan membelah jejak menjadi dua bagian yang sama.','ok'); }
+        else { wrong(1); fb(`Garis x = ${fmt(L.axis)} tidak membelah jejak sama besar. Sumbu simetri selalu melewati titik puncak.`,'no'); } draw(); steps(); }; }
+    if(L.step===3){ const ans=p.a<0; $('#ap').onclick=()=>pick(!ans); $('#an').onclick=()=>pick(ans); }
+  };
+  const pick=ok=>{ if(!ok){ wrong(1); fb('Perhatikan bentuknya: jejak naik lalu turun, jadi ada titik tertinggi. Parabola seperti itu terbuka ke bawah.','no'); return; }
+    L.step=4; S.ch[1].done=true; addCard('c1'); save(); updateHud(); sfxNote(true); steps(); draw();
+    $('#fb').innerHTML=cardHtml('Kartu Bukti · Jejak Dinding',`Puncak (${fmt(vx)}, ${fmt(vy)}), sumbu x = ${fmt(vx)}, a &lt; 0. Tinggi maksimum bola ${fmt(vy)} m.`,true)+`<p class="fb info small">Skor Bab 1: ${chScore(1)}/10</p>`;
+    $('#nx').hidden=false; };
+  $('#grd').onchange=draw;
+  if(L.step===4){ L.tap=[vx,vy]; }
+  draw(); steps();
+  if(L.step===4) $('#fb').innerHTML=cardHtml('Kartu Bukti · Jejak Dinding',`Puncak (${fmt(vx)}, ${fmt(vy)}), sumbu x = ${fmt(vx)}, a &lt; 0.`);
+  $('#nx').onclick=()=>go('s06');
+};
+
+/* S06 Bab 2: Interogasi Saksi */
+SCN.s06=st=>{
+  const W=[{k:'raka',av:'saksiA'},{k:'dinda',av:'saksiB'}];
+  st.innerHTML=`<span class="tapelabel">Bab 2 · Ruang Interogasi</span><h2>Interogasi Saksi</h2>
+   ${talk('vera','Inspektur Vera','Dua saksi memberi angka. Jangan langsung percaya. Hitung titik puncak tiap lintasan, lalu putuskan: percaya atau bantah. Wajib sertakan angka bukti.')}
+   <div class="grid2" id="wits"></div><div id="fb2"></div>
+   <div class="actions"><button class="primary" id="nx" ${S.ch[2].done?'':'hidden'}>Lanjut: Pilih Tersangka</button></div>`;
+  const render=()=>{
+    $('#wits').innerHTML=W.map(w=>{ const p=SUS[w.k], [vx,vy]=vtx(p), solved=S.b2[w.k], liar=!near(p.klaim,vy);
+      return `<div class="box" id="w-${w.k}">${roleTag('Analis')}
+        ${talk(w.av,p.saksi,`"Lemparan ${p.nama} itu tingginya paling cuma ${fmt(p.klaim)} meter!"`,solved?(liar?'gugup':'senang'):'')}
+        <p>Lintasan ${p.olahraga} ${p.nama}: <span class="eq">h(x) = ${poly(p.a,p.b,p.c)}</span></p>
+        ${solved?`<p class="fb ${liar?'no':'ok'}">${liar?`Klaim dibantah. Puncak sebenarnya (${fmt(vx)}, ${fmt(vy)}), jadi tinggi maksimum ${fmt(vy)} m, bukan ${fmt(p.klaim)} m. Saksi gugup.`:`Saksi jujur. Puncak (${fmt(vx)}, ${fmt(vy)}), tinggi maksimum memang ${fmt(vy)} m.`}</p>
+          ${graph({xr:[0,7],yr:[0,7],h:200,curves:[{f:f(p),color:w.k==='raka'?'#e07a2e':'var(--blue)',from:0}],points:[{x:vx,y:vy,label:fmt(vy)+' m'}],hlines:[{y:p.klaim,color:'var(--muted)',dash:'4 4',label:'klaim '+fmt(p.klaim)}]})}`:
+        `<div class="row"><span>Puncak: (</span><input class="n" id="px-${w.k}" inputmode="decimal" aria-label="x puncak ${p.nama}"><span>,</span><input class="n" id="py-${w.k}" inputmode="decimal" aria-label="tinggi puncak ${p.nama}"><span>)</span></div>
+         <div class="row"><button id="pc-${w.k}">Percaya</button><button id="bt-${w.k}">Bantah</button></div><div id="wf-${w.k}"></div>`}
+      </div>`; }).join('');
+    W.forEach(w=>{ if(S.b2[w.k]) return; const p=SUS[w.k], [vx,vy]=vtx(p), liar=!near(p.klaim,vy);
+      const check=verdict=>{ const x=num($('#px-'+w.k).value), y=num($('#py-'+w.k).value), out=$('#wf-'+w.k);
+        if(isNaN(x)||isNaN(y)){ out.innerHTML='<p class="fb info">Isi dulu angka bukti: koordinat titik puncak.</p>'; return; }
+        if(!near(x,vx)){ wrong(2); out.innerHTML=`<p class="fb no">x puncak belum tepat. Gunakan x = −b / (2a) dengan a = ${fmt(p.a)} dan b = ${fmt(p.b)}.</p>`; return; }
+        if(!near(y,vy)){ wrong(2); out.innerHTML=`<p class="fb no">x puncak sudah benar (${fmt(vx)}). Sekarang substitusikan x = ${fmt(vx)} ke h(x) untuk mendapat tingginya.</p>`; return; }
+        if(verdict!==(liar?'bantah':'percaya')){ wrong(2); out.innerHTML=`<p class="fb no">Angkamu benar: puncak ${fmt(vy)} m. Bandingkan dengan klaim saksi ${fmt(p.klaim)} m. Apakah sama?</p>`; return; }
+        S.b2[w.k]=true; sfxNote(true); save(); render(); finish(); };
+      $('#pc-'+w.k).onclick=()=>check('percaya'); $('#bt-'+w.k).onclick=()=>check('bantah'); });
+    runTalks($('#wits'));
+  };
+  const finish=()=>{ if(!(S.b2.raka&&S.b2.dinda)||S.ch[2].done) return; S.ch[2].done=true; addCard('c2'); addCard('c3'); save(); updateHud();
+    const [,ry]=vtx(DATA.raka), [,dy]=vtx(DATA.dinda);
+    $('#fb2').innerHTML=`<div class="grid2">${cardHtml('Kartu Bukti · Kesaksian Dibantah',`Puncak lemparan Raka ${fmt(ry)} m, bukan ${fmt(DATA.raka.klaim)} m.`,true)}${cardHtml('Kartu Bukti · Kesaksian Jujur',`Puncak servis Dinda ${fmt(dy)} m.`,true)}</div><p class="fb info small">Skor Bab 2: ${chScore(2)}/10. Saksi yang berbohong belum tentu membuat Raka bersalah. Catat saja datanya.</p>`;
+    $('#nx').hidden=false; };
+  render();
+  if(S.ch[2].done){ S.ch[2].done=false; finish(); }
+  $('#nx').onclick=()=>go('s07');
+};
+
+/* S07 Titik Keputusan */
+SCN.s07=st=>{
+  st.innerHTML=`<span class="tapelabel">Titik Keputusan</span><h2>Siapa yang diselidiki lebih dulu?</h2>
+   ${talk('vera','Inspektur Vera','Tidak ada pilihan yang salah. Tiap jalur memberi data berbeda, dan kedua jalur bertemu lagi di rekaman CCTV.')}
+   <div class="grid2">${['raka','dinda'].map(k=>{ const p=SUS[k]; return `<button class="box" id="pk-${k}" style="align-items:center;text-align:center;cursor:pointer">
+     <div style="width:110px;height:110px;background:#e8e1cc;border:5px solid #fff;transform:rotate(${k==='raka'?-3:3}deg)">${av(k)}</div>
+     <h3>${p.nama}</h3><span class="muted small">Tim ${p.olahraga} · lintasan h(x) = ${poly(p.a,p.b,p.c)}</span><span class="tapelabel">Selidiki ${p.nama}</span></button>`; }).join('')}</div>`;
+  ['raka','dinda'].forEach(k=>$('#pk-'+k).onclick=()=>{ S.first=k; S.match.who=k; save(); go(k==='raka'?'s08a':'s08b'); });
+};
+
+/* S08a / S08b Cocokkan Jejak */
+function matchScene(st,k){
+  const p=SUS[k], col=k==='raka'?'#e07a2e':'var(--blue)';
+  const disc=Math.sqrt(p.b*p.b-4*p.a*p.c), rr=Math.max((-p.b+disc)/(2*p.a),(-p.b-disc)/(2*p.a));
+  const to=Math.min(rr,8), xr=[0,Math.ceil(to)+1];
+  const U={a:-1.5,b:2,c:3, sim:0};
+  const bg=k==='raka'
+    ? (X,Y,W,H)=>`<rect width="${W}" height="${H}" fill="#3b2a1c"/><rect x="0" y="${Y(0)}" width="${W}" height="${H-Y(0)}" fill="#4a3322"/>${[1,2,3].map(i=>`<rect x="${X(0)+i*30}" y="${Y(0)-i*14}" width="${W}" height="10" fill="#2e2117"/>`).join('')}<rect x="${X(to)-3}" y="${Y(4)}" width="6" height="${Y(0)-Y(4)}" fill="#999"/><ellipse cx="${X(to)-18}" cy="${Y(3.05)}" rx="16" ry="4" fill="none" stroke="#e07a2e" stroke-width="3"/>`
+    : (X,Y,W,H)=>`<rect width="${W}" height="${H}" fill="#1d2c3a"/><rect x="0" y="${Y(0)}" width="${W}" height="${H-Y(0)}" fill="#2a3e52"/><line x1="${X(xr[1]*0.82)}" y1="${Y(0)}" x2="${X(xr[1]*0.82)}" y2="${Y(2.4)}" stroke="#ddd" stroke-width="3"/>${Array.from({length:6},(_,i)=>`<line x1="${X(xr[1]*0.82)-4}" y1="${Y(1.2+i*0.2)}" x2="${X(xr[1]*0.82)+4}" y2="${Y(1.2+i*0.2)}" stroke="#bbb"/>`).join('')}<rect x="${X(0)-2}" y="${Y(0)-4}" width="16" height="4" fill="var(--tape)"/>`;
+  st.innerHTML=`<span class="tapelabel">Jalur ${p.nama} · Lapangan ${p.olahraga}</span><h2>Cocokkan Jejak</h2>
+   ${talk('vera','Inspektur Vera',`Ini foto lintasan ${p.olahraga === 'basket' ? 'lemparan' : 'servis'} ${p.nama} yang terekam samar. Geser a, b, dan c sampai grafikmu menempel pada jejak. Kemiripan minimal ${DATA.ambangMirip}%.`)}
+   <div class="grid2"><div class="box">${roleTag('Penyidik Lapangan')}<div id="gw"></div>
+     <div class="field"><span class="small"><b>Kemiripan: <span id="pct">0</span>%</b></span><div class="meter"><i id="bar" style="width:0%"></i></div></div></div>
+   <div class="box">${roleTag('Analis')}
+     <p class="eq" id="feq"></p>
+     ${[['a',-2,0,0.1],['b',0,6,0.5],['c',0,4,0.5]].map(([n,mi,ma,stp])=>`<div class="field"><label for="s${n}">${n} = <span id="v${n}"></span></label><input type="range" id="s${n}" min="${mi}" max="${ma}" step="${stp}" value="${U[n]}"></div>`).join('')}
+     <div class="actions"><button class="primary" id="chk" ${S.match.done?'disabled':''}>Cocokkan</button></div><div id="fb"></div></div></div>
+   <div class="actions"><button class="primary" id="nx" ${S.match.done?'':'hidden'}>Lanjut ke Bab 3</button></div>`;
+  const simil=()=>{ let e=0,n=60; for(let i=0;i<=n;i++){ const x=to*i/n; e+=Math.abs(f(U)(x)-f(p)(x)); } e/=n+1; return Math.max(0,Math.round(100*(1-e/2.5))); };
+  const draw=()=>{ ['a','b','c'].forEach(n=>{ U[n]=+$('#s'+n).value; $('#v'+n).textContent=fmt(U[n]); }); if(near(U.a,0,1e-6)) U.a=-0.1;
+    U.sim=simil(); $('#pct').textContent=U.sim; $('#bar').style.width=U.sim+'%'; $('#feq').textContent='h(x) = '+poly(U.a,U.b,U.c);
+    $('#gw').innerHTML=graph({xr,yr:[0,8],label:'Foto lintasan barang bukti dan grafikmu',bg,curves:[{f:f(p),trace:true,from:0,to},{f:f(U),color:'var(--tape)',from:0,to:xr[1]}]}); };
+  ['a','b','c'].forEach(n=>$('#s'+n).oninput=draw); draw();
+  if(S.match.done){ $('#fb').innerHTML=cardHtml(`Kartu Bukti · Jejak ${p.nama}`,`Lintasan cocok: h(x) = ${poly(p.a,p.b,p.c)}`); }
+  $('#chk').onclick=()=>{ S.match.tries++; save();
+    if(U.sim>=DATA.ambangMirip){ S.match.done=true; S.match.score=Math.max(8,15-(S.match.tries-1)); addCard(k==='raka'?'j_raka':'j_dinda'); save(); updateHud(); sfxNote(true);
+      ['a','b','c'].forEach(n=>$('#s'+n).disabled=true); $('#chk').disabled=true;
+      $('#fb').innerHTML=cardHtml(`Kartu Bukti · Jejak ${p.nama}`,`Kemiripan ${U.sim}%. Lintasan ${p.nama}: h(x) = ${poly(p.a,p.b,p.c)}, puncak ${fmt(vtx(p)[1])} m.`,true)+`<p class="fb info small">Skor Cocokkan Jejak: ${S.match.score}/15</p>`;
+      $('#nx').hidden=false; return; }
+    sfxNote(false);
+    const [ux,uy]=vtx(U), [tx,ty]=vtx(p); const tips=[];
+    if(Math.abs(U.c-p.c)>0.3) tips.push(`titik awal grafikmu (x = 0) ${U.c>p.c?'terlalu tinggi':'terlalu rendah'}: atur c`);
+    if(Math.abs(ux-tx)>0.3) tips.push(`puncakmu ${ux>tx?'terlalu ke kanan':'terlalu ke kiri'} (x = ${fmt(ux)}): ingat x puncak = −b/(2a)`);
+    if(Math.abs(uy-ty)>0.3) tips.push(`puncakmu ${uy>ty?'terlalu tinggi':'terlalu rendah'} (${fmt(uy)} m)`);
+    if(!tips.length) tips.push(Math.abs(U.a)>Math.abs(p.a)?'parabolamu terlalu sempit: perkecil |a|':'parabolamu terlalu lebar: perbesar |a|');
+    $('#fb').innerHTML=`<p class="fb no">Kemiripan ${U.sim}%, belum ${DATA.ambangMirip}%. Grafikmu meleset: ${tips.join('; ')}.</p>`; };
+  $('#nx').onclick=()=>go('s09');
+}
+SCN.s08a=st=>matchScene(st,'raka');
+SCN.s08b=st=>matchScene(st,'dinda');
+
+/* S09 Bab 3: Rekaman CCTV */
+SCN.s09=st=>{
+  const R=DATA.robo, [[x0,y0],[x1,y1],[x2,y2]]=DATA.cctv, k=x2/x1;
+  const r1=y1-R.c, r2=y2-R.c, ca=x2*x2-k*x1*x1, cr=r2-k*r1;
+  const stepsDef=[
+    {q:`Frame 1: bola di (${x0}, ${y0}). Substitusi x = ${x0}: f(${x0}) = a·0 + b·0 + c, jadi c = `, ans:R.c, hint:`Saat x = 0, suku ax² dan bx bernilai 0, sehingga f(0) = c.`},
+    {q:`Frame 2: (${x1}, ${y1}) → ${x1*x1}a + ${x1}b + ${fmt(R.c)} = ${y1}, jadi ${x1*x1}a + ${x1}b = `, ans:r1, hint:`Pindahkan c ke ruas kanan: ${y1} − ${fmt(R.c)}.`, tag:'(i)'},
+    {q:`Frame 3: (${x2}, ${y2}) → ${x2*x2}a + ${x2}b + ${fmt(R.c)} = ${y2}, jadi ${x2*x2}a + ${x2}b = `, ans:r2, hint:`Pindahkan c ke ruas kanan: ${y2} − ${fmt(R.c)}.`, tag:'(ii)'},
+    {q:`Eliminasi b: kalikan (i) dengan ${fmt(k)} → ${fmt(k*x1*x1)}a + ${fmt(x2)}b = ${fmt(k*r1)}. Kurangkan dari (ii): ${fmt(ca)}a = ${fmt(cr)}, jadi a = `, ans:R.a, hint:`a = ${fmt(cr)} ÷ ${fmt(ca)}.`},
+    {q:`Substitusi a ke (i): ${x1*x1}·(${fmt(R.a)}) + ${x1}b = ${fmt(r1)}, jadi b = `, ans:R.b, hint:`${x1}b = ${fmt(r1)} − (${fmt(x1*x1*R.a)}), lalu bagi dengan ${x1}.`}
+  ];
+  const done=S.ch[3].done; let cur=done?6:(S.b3||0);
+  st.innerHTML=`<span class="tapelabel">Bab 3 · Ruang Keamanan</span><h2>Rekaman CCTV</h2>
+   ${S.hint3?`<p class="fb info">Petunjuk baru dari sidang: perhatikan nilai c. Siapa yang bolanya mulai dari ketinggian ${fmt(R.c)} m? Bandingkan dengan c pada lintasan Raka (${fmt(DATA.raka.c)} m) dan Dinda (${fmt(DATA.dinda.c)} m), lalu cek lagi di Bab 4.</p>`:''}
+   ${talk('vera','Inspektur Vera','Kamera CCTV parkiran menangkap bola di tiga frame. Susun fungsi kuadratnya dari tiga titik ini. Bola siapa ini sebenarnya?')}
+   <div class="cctv">${DATA.cctv.map(([x,y],i)=>`<figure><svg viewBox="0 0 120 90" style="width:100%;display:block"><rect width="120" height="90" fill="#222"/><line x1="0" y1="80" x2="120" y2="80" stroke="#555"/><circle cx="${10+x*11}" cy="${80-y*7.5}" r="5" fill="#ddd"/><text x="6" y="12" font-size="8" fill="#ccc" font-family="monospace">CAM-02</text></svg><figcaption><span class="rec">● REC 10:42:0${i}</span><span>(${x}, ${y})</span></figcaption></figure>`).join('')}</div>
+   <div class="grid2"><div class="box">${roleTag('Penyidik Lapangan')}<div id="gw"></div></div>
+   <div class="box">${roleTag('Analis')}<p>Model: <span class="eq">f(x) = ax² + bx + c</span></p><div id="stp" style="display:flex;flex-direction:column;gap:12px"></div><div id="fb"></div></div></div>
+   <div id="twist"></div>
+   <div class="actions"><button class="primary" id="nx" ${done?'':'hidden'}>Lanjut ke Bab 4</button></div>`;
+  const draw=()=>{ $('#gw').innerHTML=graph({xr:[0,9],yr:[0,10],label:'Titik CCTV dan fungsi hasil',points:DATA.cctv.map(([x,y])=>({x,y,label:`(${x}, ${y})`})),curves:cur>=5?[{f:f(R),color:'var(--tape)'}]:[]}); };
+  const render=()=>{
+    let h=stepsDef.map((s,i)=>i>cur?'':`<div class="step ${i===cur?'cur':'ok'}"><span>${s.tag?`<b>${s.tag}</b> `:''}${s.q}${i<cur?`<b class="type">${fmt(s.ans)}</b>`:''}</span>${i===cur?`<div class="row"><input class="n" id="in" inputmode="decimal" aria-label="jawaban langkah ${i+1}"><button id="ok">Periksa</button></div>`:''}</div>`).join('');
+    if(cur>=5) h+=`<div class="step ${cur===5?'cur':'ok'}"><b>Fungsi CCTV: f(x) = ${poly(R.a,R.b,R.c)}</b><span>Apa arti c = ${fmt(R.c)} dalam kasus ini?</span>
+      ${cur===5?`<div class="choice">${[[`Tinggi bola saat mulai dilontarkan (x = 0) adalah ${fmt(R.c)} m`,1],[`Tinggi maksimum bola ${fmt(R.c)} m`,0],[`Bola menyentuh tanah di x = ${fmt(R.c)}`,0],[`Jarak mendatar bola ${fmt(R.c)} m`,0]].map(([t,v],i)=>`<button data-v="${v}" class="opt">${t}</button>`).join('')}</div>`:`<span class="type">Tinggi titik lontar = ${fmt(R.c)} m</span>`}</div>`;
+    $('#stp').innerHTML=h; draw();
+    if(cur<5){ const s=stepsDef[cur]; const inp=$('#in'); inp.focus({preventScroll:true});
+      const chk=()=>{ const v=num(inp.value); if(isNaN(v)) return; if(near(v,s.ans)){ cur++; S.b3=cur; save(); sfxNote(true); $('#fb').innerHTML=''; render(); } else { wrong(3); $('#fb').innerHTML=`<p class="fb no">Belum tepat. ${s.hint}</p>`; } };
+      $('#ok').onclick=chk; inp.onkeydown=e=>{ if(e.key==='Enter') chk(); }; }
+    if(cur===5) $('#stp').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(b.dataset.v==='1'){ cur=6; S.b3=6; reveal(); render(); } else { wrong(3); $('#fb').innerHTML='<p class="fb no">Ingat, c adalah nilai f(x) ketika x = 0, yaitu tinggi bola di titik awal lintasan.</p>'; } });
+  };
+  const reveal=()=>{ S.ch[3].done=true; addCard('c5'); save(); updateHud(); sfxNote(true);
+    $('#fb').innerHTML=cardHtml('Kartu Bukti · Rekaman CCTV',`f(x) = ${poly(R.a,R.b,R.c)}. Titik lontar ${fmt(R.c)} m.`,true)+`<p class="fb info small">Skor Bab 3: ${chScore(3)}/10</p>`;
+    twist(); $('#nx').hidden=false; };
+  const twist=()=>{ $('#twist').innerHTML=`<div class="box" style="border-color:var(--red)"><span class="tapelabel" style="background:var(--red);color:#fff">Twist</span>
+     ${talk('vera','Inspektur Vera',`Tunggu. c = ${fmt(R.c)} m itu persis tinggi lubang mesin pelontar bola latihan. Dan jejak di dinding pada Bab 1 juga berpuncak di (${fmt(vtx(DATA.jejak)[0])}, ${fmt(vtx(DATA.jejak)[1])}). Kita punya tersangka ketiga.`)}
+     ${talk('robo','Si Robo · mesin pelontar','KLIK-KLAK. Setelan sudut: BERUBAH. Lubang pelontar: 1 meter. Mode: latihan otomatis.','gugup')}</div>`; runTalks($('#twist')); };
+  render(); if(done){ $('#fb').innerHTML=cardHtml('Kartu Bukti · Rekaman CCTV',`f(x) = ${poly(R.a,R.b,R.c)}. Titik lontar ${fmt(R.c)} m.`); twist(); }
+  $('#nx').onclick=()=>go('s10');
+};
+
+/* S10 Bab 4: Uji Diskriminan */
+SCN.s10=st=>{
+  const H=DATA.tinggiKaca; let hl=H;
+  const rows=[['raka','#e07a2e'],['dinda','var(--blue)'],['robo','var(--tape)']];
+  st.innerHTML=`<span class="tapelabel">Bab 4 · Lab Simulasi</span><h2>Uji Diskriminan</h2>
+   ${talk('vera',`Inspektur Vera`,`Pertanyaan penentu: bola siapa yang bisa mencapai ketinggian kaca ${fmt(H)} m? Bentuk h(x) = ${fmt(H)}, susun menjadi ax² + bx + c = 0, lalu hitung D.`)}
+   <div class="grid2"><div class="box">${roleTag('Penyidik Lapangan')}<div id="gw"></div>
+     <div class="field"><label for="hl">Geser garis ketinggian: <span id="hlv"></span> m</label><input type="range" id="hl" min="0" max="10" step="0.5" value="${H}"></div></div>
+   <div class="box">${roleTag('Analis')}<div id="rows" style="display:flex;flex-direction:column;gap:14px"></div></div></div>
+   <div id="fb"></div>
+   <div class="actions"><button class="primary" id="nx" ${S.ch[4].done?'':'hidden'}>Ke Papan Bukti</button></div>`;
+  const draw=()=>{ $('#hlv').textContent=fmt(hl);
+    $('#gw').innerHTML=graph({xr:[0,9],yr:[0,10],label:'Tiga lintasan tersangka dan garis ketinggian kaca',
+      curves:rows.map(([k,c])=>({f:f(SUS[k]),color:c,label:SUS[k].nama,lx:vtx(SUS[k])[0],from:0})),
+      hlines:[{y:hl,color:near(hl,H)?'var(--red)':'var(--chalk)',label:near(hl,H)?`kaca ${fmt(H)} m`:`${fmt(hl)} m`,dash:near(hl,H)?'':'5 4'}]}); };
+  $('#hl').oninput=e=>{ hl=+e.target.value; draw(); };
+  const render=()=>{ $('#rows').innerHTML=rows.map(([k,c])=>{ const p=SUS[k], D=Dval(p,H), ok=S.b4[k];
+      return `<div class="step ${ok?'ok':'cur'}"><b style="color:${c}">${p.nama}: h(x) = ${poly(p.a,p.b,p.c)} = ${fmt(H)}</b>
+       ${ok?`<span class="type">${poly(p.a,p.b,p.c-H)} = 0 → D = ${fmt(D)}${near(D/(p.a*p.a),D)?'':` (atau ${fmt(D/(p.a*p.a))} bila persamaan dibagi a)`} ${D<0?'< 0 → tidak mencapai kaca':'> 0 → mencapai kaca'}</span>`:
+       `<div class="row"><span>D =</span><input class="n" id="d-${k}" inputmode="decimal" aria-label="Diskriminan ${p.nama}"><button id="y-${k}" class="sm">Bisa mencapai</button><button id="n-${k}" class="sm">Tidak mencapai</button></div><div id="f-${k}"></div>`}</div>`; }).join('');
+    rows.forEach(([k])=>{ if(S.b4[k]) return; const p=SUS[k], D=Dval(p,H), acc=[D,D/(p.a*p.a)];
+      const chk=reach=>{ const v=num($('#d-'+k).value), out=$('#f-'+k);
+        if(isNaN(v)){ out.innerHTML='<p class="fb info small">Tulis nilai D sebagai angka bukti.</p>'; return; }
+        if(!acc.some(a=>near(v,a))){ wrong(4); out.innerHTML=`<p class="fb no small">D belum tepat. Persamaannya: ${poly(p.a,p.b,p.c-H)} = 0. Hitung D = b² − 4ac.</p>`; return; }
+        if(reach!==(D>0)){ wrong(4); out.innerHTML=`<p class="fb no small">D = ${fmt(v)}. Ingat: D &lt; 0 berarti tidak ada akar real, garis tidak pernah tersentuh.</p>`; return; }
+        S.b4[k]=true; sfxNote(true); save(); render(); fin(); };
+      $('#y-'+k).onclick=()=>chk(true); $('#n-'+k).onclick=()=>chk(false); });
+  };
+  const fin=()=>{ if(!rows.every(([k])=>S.b4[k])) return; const first=!S.ch[4].done; S.ch[4].done=true; ['d_raka','d_dinda','d_robo'].forEach(addCard); save(); updateHud();
+    $('#fb').innerHTML=cardHtml('Kartu Bukti · Uji Diskriminan',`Hanya lintasan Si Robo yang memotong garis ${fmt(H)} m (D = ${fmt(Dval(DATA.robo,H)/(DATA.robo.a**2))} &gt; 0).`,first)+`<p class="fb info small">Skor Bab 4: ${chScore(4)}/10</p>`; $('#nx').hidden=false; };
+  draw(); render(); fin();
+  $('#nx').onclick=()=>go('s11');
+};
+
+/* S11 Papan Bukti & Laporan */
+function cardDefs(){
+  const H=DATA.tinggiKaca, j=vtx(DATA.jejak), dd=k=>{ const p=SUS[k], D=Dval(p,H); return near(D/(p.a*p.a),D)?fmt(D):fmt(D/(p.a*p.a)); };
+  return {
+    c1:{t:'Jejak dinding',d:`Puncak (${fmt(j[0])}, ${fmt(j[1])}), a < 0`,who:'robo'},
+    c2:{t:'Saksi A dibantah',d:`Puncak Raka ${fmt(vtx(DATA.raka)[1])} m, bukan ${fmt(DATA.raka.klaim)} m`,who:'raka'},
+    c3:{t:'Saksi B jujur',d:`Puncak Dinda ${fmt(vtx(DATA.dinda)[1])} m`,who:'dinda'},
+    j_raka:{t:'Jejak lemparan',d:`Raka: h(x) = ${poly(DATA.raka.a,DATA.raka.b,DATA.raka.c)}`,who:'raka'},
+    j_dinda:{t:'Jejak servis',d:`Dinda: h(x) = ${poly(DATA.dinda.a,DATA.dinda.b,DATA.dinda.c)}`,who:'dinda'},
+    c5:{t:'CCTV',d:`f(x) = ${poly(DATA.robo.a,DATA.robo.b,DATA.robo.c)}, c = ${fmt(DATA.robo.c)} m = lubang pelontar`,who:'robo'},
+    d_raka:{t:'Uji D Raka',d:`D = ${dd('raka')} < 0, tak sampai ${fmt(H)} m`,who:'raka'},
+    d_dinda:{t:'Uji D Dinda',d:`D = ${dd('dinda')} < 0, tak sampai ${fmt(H)} m`,who:'dinda'},
+    d_robo:{t:'Uji D Si Robo',d:`D = ${dd('robo')} > 0, mencapai ${fmt(H)} m`,who:'robo'}
+  };
+}
+SCN.s11=st=>{
+  const C=cardDefs(); let sel=null;
+  const R=S.report;
+  st.innerHTML=`<span class="tapelabel">Papan Bukti</span><h2>Susun Kesimpulanmu</h2>
+   ${talk('vera','Inspektur Vera','Seret tiap kartu bukti ke foto tersangka yang berkaitan. Benang merah akan menghubungkannya. Setelah itu, tulis Laporan Kasus dengan argumen matematis.')}
+   <div class="board" id="board">${roleTag('Penyidik Lapangan')}
+     <div class="tray" id="tray" aria-label="Kartu belum ditempel"></div>
+     <div class="cols">${['raka','dinda','robo'].map(k=>`<div class="col" data-col="${k}" tabindex="-1"><div class="pin"><div class="ph">${av(k)}</div>${SUS[k].nama}</div></div>`).join('')}</div>
+     <svg class="strings" id="str"></svg></div>
+   <p class="muted small">Di HP: ketuk kartu, lalu ketuk kolom tersangka. Ketuk kartu yang sudah ditempel untuk mengembalikannya.</p>
+   <div class="box">${roleTag('Juru Bicara')}<h3>Laporan Kasus</h3>
+     <div class="row"><span class="type">Pelakunya</span><select id="rp" style="width:auto"><option value="">pilih…</option>${['raka','dinda','robo'].map(k=>`<option value="${k}" ${R.pelaku===k?'selected':''}>${SUS[k].nama}</option>`).join('')}</select>
+     <span class="type">(D =</span><input class="n" id="rd" inputmode="decimal" value="${esc(R.D)}" aria-label="Nilai D tersangka"><span class="type">)</span></div>
+     <div class="field"><label for="ra">karena…</label><textarea id="ra" placeholder="Tuliskan alasanmu: puncak lintasannya, nilai D di ketinggian kaca, dan mengapa tersangka lain ditolak.">${esc(R.alasan)}</textarea></div>
+     <p id="rerr" class="fb no" hidden></p>
+     <div class="actions"><button class="primary" id="sub">Ajukan Tuduhan</button></div></div>`;
+  const render=()=>{
+    const tray=$('#tray'); tray.innerHTML='';
+    st.querySelectorAll('.col .card').forEach(c=>c.remove());
+    S.cards.forEach(id=>{ const c=C[id]; if(!c) return; const el=document.createElement('div'); el.className='card'+(sel===id?' sel':''); el.dataset.id=id; el.tabIndex=0; el.innerHTML=`<b>${c.t}</b>${esc(c.d)}`;
+      const where=S.board[id]; (where?st.querySelector(`.col[data-col="${where}"]`):tray).appendChild(el); bindCard(el); });
+    if(!tray.children.length) tray.innerHTML='<p class="small" style="color:#fff;opacity:.8">Semua kartu sudah ditempel.</p>';
+    strings();
+  };
+  const strings=()=>{ if(!$('#board')) return; const b=$('#board').getBoundingClientRect(), svg=$('#str'); let h='';
+    st.querySelectorAll('.col .card').forEach(c=>{ const col=c.closest('.col'), ph=col.querySelector('.ph').getBoundingClientRect(), r=c.getBoundingClientRect();
+      h+=`<line x1="${ph.left+ph.width/2-b.left}" y1="${ph.bottom-b.top-4}" x2="${r.left+r.width/2-b.left}" y2="${r.top-b.top+4}"/><circle cx="${r.left+r.width/2-b.left}" cy="${r.top-b.top+4}" r="3.5" fill="#c0281b"/>`; });
+    svg.setAttribute('viewBox',`0 0 ${b.width} ${b.height}`); svg.innerHTML=h; };
+  const place=(id,col)=>{ if(col) S.board[id]=col; else delete S.board[id]; sel=null; sfxTick(); save(); render(); };
+  function bindCard(el){
+    let sx,sy,moved=false,ghost=null;
+    el.onpointerdown=e=>{ sx=e.clientX; sy=e.clientY; moved=false; el.setPointerCapture(e.pointerId); };
+    el.onpointermove=e=>{ if(sx==null) return; if(!moved && Math.hypot(e.clientX-sx,e.clientY-sy)>8){ moved=true; ghost=el.cloneNode(true); ghost.classList.add('dragging'); document.body.appendChild(ghost); el.style.opacity=.3; }
+      if(moved){ ghost.style.left=(e.clientX-95)+'px'; ghost.style.top=(e.clientY-20)+'px'; st.querySelectorAll('.col').forEach(c=>c.classList.remove('hot')); const t=document.elementFromPoint(e.clientX,e.clientY); const col=t&&t.closest('.col'); if(col) col.classList.add('hot'); } };
+    el.onpointerup=e=>{ const id=el.dataset.id; if(moved){ ghost.remove(); el.style.opacity=''; st.querySelectorAll('.col').forEach(c=>c.classList.remove('hot')); const t=document.elementFromPoint(e.clientX,e.clientY); const col=t&&t.closest('.col'); const tr=t&&t.closest('#tray'); if(col) place(id,col.dataset.col); else if(tr) place(id,null); }
+      else { if(S.board[id]) place(id,null); else { sel=sel===id?null:id; render(); } } sx=null; };
+    el.onpointercancel=()=>{ if(ghost) ghost.remove(); el.style.opacity=''; sx=null; };
+    el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.onpointerup({clientX:0,clientY:0}); } };
+  }
+  st.querySelectorAll('.col').forEach(c=>c.addEventListener('click',e=>{ if(sel && !e.target.closest('.card')) place(sel,c.dataset.col); }));
+  addEventListener('resize',strings);
+  render(); setTimeout(strings,50);
+  const keep=()=>{ S.report={pelaku:$('#rp').value,D:$('#rd').value,alasan:$('#ra').value}; save(); };
+  ['rp','rd','ra'].forEach(i=>$('#'+i).oninput=keep);
+  $('#sub').onclick=()=>{ keep(); const e=$('#rerr');
+    if(!S.report.pelaku||!S.report.alasan.trim()||S.report.D===''){ e.hidden=false; e.textContent='Lengkapi laporan: pilih pelaku, isi nilai D, dan tulis alasannya.'; return; }
+    if(Object.keys(S.board).length<Math.min(4,S.cards.length)){ e.hidden=false; e.textContent='Tempel minimal 4 kartu bukti ke papan sebelum mengajukan tuduhan.'; return; }
+    sfxTick(); go('s12'); };
+};
+
+/* S12 Sidang Kasus */
+function nilaiLaporan(){
+  const R=S.report, t=R.alasan.toLowerCase(), H=DATA.tinggiKaca, p=SUS[R.pelaku];
+  const D=num(R.D), Dk=p?Dval(p,H):NaN;
+  const cD = p && !isNaN(D) && (near(D,Dk)||near(D,Dk/(p.a*p.a)));
+  const cP = /puncak|maksimum|tertinggi|\(\s*4\s*[,;]\s*9\s*\)|9\s*m/.test(t);
+  const reason=/negatif|d\s*<\s*0|kurang dari (nol|0)|tidak (mencapai|sampai|bisa)|tak (mencapai|sampai)|tidak memotong|tidak ada akar/.test(t);
+  const others=['raka','dinda','robo'].filter(k=>k!==R.pelaku).filter(k=>t.includes(SUS[k].nama.toLowerCase().replace('si ',''))).length;
+  const both=/keduanya|kedua tersangka|tersangka lain|dua siswa/.test(t);
+  const cT = reason ? ((others>=2||both)?10:(others===1?5:0)) : 0;
+  return { cD, cP, cT, skor:(cD?8:0)+(cP?7:0)+cT, benar:R.pelaku==='robo' };
+}
+SCN.s12=st=>{
+  const v=nilaiLaporan(), R=S.report, nama=SUS[R.pelaku].nama;
+  const C=cardDefs(); const placed=Object.entries(S.board); const okPl=placed.filter(([id,col])=>C[id]&&C[id].who===col).length;
+  const pembaca=tim()?'Juru Bicara':S.name;
+  const lap=`Pelakunya ${nama} karena ${R.alasan.trim()} (D = ${R.D}).`;
+  st.innerHTML=`<span class="tapelabel">Ruang Sidang</span><h2>Sidang Kasus</h2>
+   ${talk('vera','Inspektur Vera',`Silakan, ${esc(pembaca)}, bacakan kesimpulanmu di depan sidang.`)}
+   <div class="evcard"><div class="t">Laporan Kasus · ${esc(S.name)}${tim()?' (Tim)':''}</div><p style="margin-top:6px">${esc(lap)}</p></div>
+   <div class="row"><button class="sm" id="spk">Bacakan laporan</button></div>
+   <div class="box"><h3>Pemeriksaan Inspektur Vera</h3><div id="ck" style="display:flex;flex-direction:column;gap:6px"></div></div>
+   <div class="actions"><button class="primary" id="nx" hidden>Lihat Putusan</button></div>`;
+  $('#spk').onclick=()=>say(lap);
+  const items=[
+    [v.benar,`Tersangka yang dituduh: ${nama}`],
+    [v.cD,`Nilai D sesuai untuk lintasan ${nama} di ketinggian ${fmt(DATA.tinggiKaca)} m`],
+    [v.cP,'Argumen menyebut titik puncak atau tinggi maksimum'],
+    [v.cT===10,v.cT===5?'Alasan menolak tersangka lain baru untuk satu orang':'Alasan menolak tersangka lain dengan data (D < 0 atau tidak mencapai kaca)'],
+    [okPl>=placed.length-1&&placed.length>0,`Papan Bukti: ${okPl} dari ${placed.length} kartu terhubung ke tersangka yang tepat`]
+  ];
+  let i=0; const ck=$('#ck');
+  const iv=setInterval(()=>{ if(i>=items.length){ clearInterval(iv); $('#nx').hidden=false; return; } const [ok,t]=items[i++]; sfxTick();
+    ck.insertAdjacentHTML('beforeend',`<p class="fb ${ok?'ok':'no'} small">${ok?'✓':'✗'} ${t}</p>`); }, reduceMotion?0:600);
+  $('#nx').onclick=()=>{ S.accuse++;
+    S.laporan=v.benar?v.skor:0;
+    const wa=S.wrongAcc||0;
+    if(v.benar){ S.tuduhan = wa===0?20:(wa===1?10:5); S.ending = v.skor>=20 ? 'utama' : 'menggantung'; }
+    else { S.wrongAcc=wa+1; S.tuduhan=0; S.ending='salah'; }
+    save(); updateHud(); go('s13'); };
+};
+
+/* S13 Ending */
+SCN.s13=st=>{
+  const e=S.ending, R=S.report, H=DATA.tinggiKaca;
+  if(e==='utama'){
+    st.innerHTML=`<span class="tapelabel">Putusan · Kasus Terpecahkan</span><h2>Ending: Detektif Utama</h2>
+     <svg class="scene-svg" viewBox="0 0 480 200" role="img" aria-label="Si Robo diperbaiki teknisi"><rect width="480" height="200" fill="#0f1115"/><g transform="translate(170 20) scale(1.6)">${av('robo','senang').replace(/<\/?svg[^>]*>/g,'')}</g><g stroke="var(--tape)" stroke-width="4" stroke-linecap="round"><path d="M120 60 l20 20 M360 60 l-20 20 M110 120 h24 M370 120 h-24"/></g><text x="240" y="190" fill="var(--tape)" text-anchor="middle" font-family="monospace" font-size="13">SUDUT PELONTAR DIKALIBRASI ULANG</text></svg>
+     ${talk('vera','Inspektur Vera',`Luar biasa. Lintasan Si Robo satu-satunya yang mencapai kaca ${fmt(H)} m. Raka dan Dinda bebas. Data mengalahkan prasangka.`,'senang')}
+     ${talk('robo','Si Robo','BIP. Kalibrasi selesai. Maaf, kaca ruang guru.','senang')}
+     <div class="row" style="justify-content:center">${badge('emas')}</div>
+     <div class="actions"><button class="primary" id="nx">Refleksi & Sertifikat</button></div>`;
+    $('#nx').onclick=()=>{ saveRekap(); go('s14'); };
+  } else if(e==='menggantung'){
+    const v=nilaiLaporan(); const kurang=[]; if(!v.cD) kurang.push(`nilai D Si Robo pada ketinggian ${fmt(H)} m`); if(!v.cP) kurang.push('titik puncak atau tinggi maksimum lintasan Si Robo'); if(v.cT<10) kurang.push('alasan menolak Raka dan Dinda dengan data D mereka');
+    st.innerHTML=`<span class="tapelabel">Putusan · Ditunda</span><h2>Ending: Kasus Menggantung</h2>
+     ${talk('vera','Inspektur Vera',`Tersangkamu tepat, tetapi laporan ini belum cukup kuat untuk sidang. Perkuat argumenmu. Yang masih kurang: ${kurang.join('; ')}.`)}
+     <p class="fb info">Skor laporan saat ini ${S.laporan}/25. Kembali ke Papan Bukti untuk memperbaikinya.</p>
+     <div class="actions"><button id="fin" class="ghost">Selesaikan apa adanya</button><button class="primary" id="nx">Perkuat Laporan</button></div>`;
+    $('#nx').onclick=()=>go('s11'); $('#fin').onclick=()=>{ saveRekap(); go('s14'); };
+  } else {
+    const k=R.pelaku, p=SUS[k], [vx,vy]=vtx(p), D=Dval(p,H);
+    st.innerHTML=`<span class="tapelabel" style="background:var(--red);color:#fff">Putusan · Salah Tuduh</span><h2>Ending: Salah Tuduh</h2>
+     ${talk(k,p.nama,`Itu tidak mungkin aku. Lintasanku h(x) = ${poly(p.a,p.b,p.c)} paling tinggi cuma ${fmt(vy)} meter di x = ${fmt(vx)}. Kalau h(x) = ${fmt(H)}, D-nya ${fmt(D)}, negatif. Bolaku tidak pernah sampai ke kaca!`,'gugup')}
+     ${graph({xr:[0,8],yr:[0,10],h:210,curves:[{f:f(p),color:'var(--red)',from:0}],hlines:[{y:H,color:'var(--blue)',label:`kaca ${fmt(H)} m`}],points:[{x:vx,y:vy,label:fmt(vy)+' m'}]})}
+     ${talk('vera','Inspektur Vera','Inilah bahayanya menyimpulkan tanpa data. Kembali ke rekaman CCTV. Kali ini perhatikan baik-baik nilai c.')}
+     <p class="fb info">Diskusikan di kelas: bukti mana yang tadi kamu abaikan?</p>
+     <div class="actions"><button class="primary" id="nx">Kembali ke Bab 3 dengan petunjuk baru</button></div>`;
+    $('#nx').onclick=()=>{ S.hint3=true; save(); go('s09'); };
+  }
+};
+function badge(kind){ const c=kind==='emas'?['#f6d365','#c99a1b']:['#d9dde3','#8a929c'];
+  return `<svg class="badge" viewBox="0 0 100 100" role="img" aria-label="Lencana ${kind}"><path d="M30 60 L22 96 L40 86 L50 98 L52 64Z M70 60 L78 96 L60 86 L50 98 L48 64Z" fill="var(--red)"/><circle cx="50" cy="44" r="34" fill="${c[1]}"/><circle cx="50" cy="44" r="28" fill="${c[0]}"/><path d="M32 52 Q50 14 68 52" fill="none" stroke="${c[1]}" stroke-width="4"/><circle cx="50" cy="33" r="4" fill="${c[1]}"/></svg>`; }
+function saveRekap(){
+  if(S.saved) return; S.saved=true;
+  const r={tgl:new Date().toLocaleString('id-ID'),nama:S.name,kelas:S.kelas,absen:S.absen,mode:tim()?`Tim (${S.role}${S.team?': '+S.team:''})`:'Individu',
+    b1:chScore(1),b2:chScore(2),b3:chScore(3),b4:chScore(4),cocok:S.match.score,tuduhan:S.tuduhan,laporan:S.laporan,total:total(),
+    bantuan:[1,2,3,4].reduce((a,n)=>a+S.ch[n].help,0),ending:{utama:'Detektif Utama',menggantung:'Kasus Menggantung',salah:'Salah Tuduh'}[S.ending]||'',
+    teks:`Pelakunya ${SUS[S.report.pelaku]?.nama||'-'} karena ${S.report.alasan} (D = ${S.report.D})`};
+  try{ const L=rekapList(); L.push(r); localStorage.setItem(RKEY,JSON.stringify(L)); }catch(e){}
+  save();
+}
+
+/* S14 Refleksi & Sertifikat */
+SCN.s14=st=>{
+  const Q=['Konsep fungsi kuadrat mana yang paling menentukan terpecahkannya kasus?','Di mana kamu sempat salah, dan apa yang membuatmu sadar?','Sebutkan satu lintasan parabola lain di sekitarmu dan apa arti titik puncaknya.'];
+  const lencana=S.ending==='utama'?'emas':'perak';
+  const tgl=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const rekap=`REKAP KASUS PARABOLA\nNama: ${S.name} | Kelas: ${S.kelas} | Absen: ${S.absen} | Mode: ${tim()?'Tim - '+S.role:'Individu'}\nBab 1: ${chScore(1)}/10 | Bab 2: ${chScore(2)}/10 | Bab 3: ${chScore(3)}/10 | Bab 4: ${chScore(4)}/10\nCocokkan Jejak: ${S.match.score}/15 | Tuduhan: ${S.tuduhan}/20 | Laporan: ${S.laporan}/25\nTOTAL: ${total()}/100 | Bantuan dibuka: ${[1,2,3,4].reduce((a,n)=>a+S.ch[n].help,0)} | Ending: ${S.ending==='utama'?'Detektif Utama':'Kasus Menggantung'}\nLaporan: Pelakunya ${SUS[S.report.pelaku]?.nama} karena ${S.report.alasan} (D = ${S.report.D})`;
+  st.innerHTML=`<span class="tapelabel">Arsip Kasus</span><h2>Refleksi & Sertifikat</h2>
+   <div class="grid2"><div class="box"><h3>Rekap Kasus</h3>
+     <table class="tbl"><tbody>
+      ${[1,2,3,4].map(n=>`<tr><td>Kartu Bukti Bab ${n}</td><td>${chScore(n)}/10</td></tr>`).join('')}
+      <tr><td>Cocokkan Jejak</td><td>${S.match.score}/15</td></tr><tr><td>Ketepatan tuduhan</td><td>${S.tuduhan}/20</td></tr><tr><td>Laporan Kasus</td><td>${S.laporan}/25</td></tr>
+      <tr><td><b>Total</b></td><td><b>${total()}/100</b></td></tr></tbody></table></div>
+   <div class="box"><h3>Pertanyaan Refleksi</h3>${Q.map((q,i)=>`<div class="field"><label for="q${i}">${i+1}. ${q}</label><textarea id="q${i}">${esc(S.refl[i])}</textarea></div>`).join('')}</div></div>
+   <div class="cert" id="cert">
+     <span class="small type">Satuan Detektif Matematika · SMAN 2 Tangerang</span>
+     <h2>Sertifikat Detektif Parabola</h2><span class="small">diberikan kepada</span>
+     <div class="nm">${esc(S.name)}</div><span class="type small">Kelas ${esc(S.kelas)} · No. ${esc(S.absen)}${tim()&&S.team?' · Tim: '+esc(S.team):''}</span>
+     ${badge(lencana)}
+     <p>atas keberhasilan memecahkan <b>Kasus Kaca Pecah Ruang Guru</b> dengan fungsi kuadrat. Skor ${total()}/100 · Lencana ${lencana}.</p>
+     <span class="type small">Inspektur Vera · ${tgl}</span></div>
+   <p class="muted small">Untuk menyimpan sertifikat, ambil tangkapan layar bagian ini.</p>
+   <div class="box"><h3>Laporan untuk Guru</h3><p class="muted small">Salin rekap ini dan kirim ke guru. Rekap juga tersimpan di menu Rekap Guru pada perangkat ini.</p>
+     <div class="row"><button class="primary" id="cp">Salin rekap</button><span id="cpm" class="muted small"></span></div></div>
+   <div class="actions"><button id="again">Main lagi</button><button class="primary" id="done">Selesai</button></div>`;
+  Q.forEach((_,i)=>$('#q'+i).oninput=e=>{ S.refl[i]=e.target.value; save(); });
+  $('#cp').onclick=()=>copyText(rekap+'\n\nRefleksi:\n'+S.refl.map((r,i)=>`${i+1}. ${r}`).join('\n'),$('#cpm'));
+  $('#again').onclick=()=>{ const m=S.music; S=fresh(); S.music=m; save(); go('s01'); };
+  $('#done').onclick=()=>{ const m=S.music; S=fresh(); S.music=m; save(); go('s01'); };
+};
+
+/* ---------- boot ---------- */
+go('s01');
+</script>
+
+</body></html>
